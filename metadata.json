@@ -1,0 +1,6 @@
+{
+  "name": "Hackathon AI",
+  "description": "A mobile-first AI chat application featuring multiple reasoning models, chain-of-thought visualization, and a polished dark-mode UI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
