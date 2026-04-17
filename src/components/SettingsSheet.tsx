@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { AppSettings } from "@/types";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight, User, Database, Globe, Moon, Type, Mic, Info, FileText, HelpCircle, LogOut, LogIn, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, User as UserIcon, Database, Globe, Moon, Type, Mic, Info, FileText, HelpCircle, LogOut, LogIn, X } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import { useAuth } from "@/lib/AuthContext";
 
 interface SettingsSheetProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ const SettingsItem = ({ icon: Icon, label, value, onClick, hideBorder = false }:
 
 export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings }: SettingsSheetProps) {
   const t = useTranslation(settings.language);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const { user, signInWithGoogle, logout } = useAuth();
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
   const cycleLanguage = () => {
@@ -60,7 +61,11 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings }: S
   };
 
   const handleAuthToggle = () => {
-    setIsLoggedIn(!isLoggedIn);
+    if (user) {
+      logout();
+    } else {
+      signInWithGoogle();
+    }
   };
 
   return (
@@ -87,7 +92,7 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings }: S
             <div className="mb-6">
               <div className="text-[0.8125rem] font-medium text-gray-500 dark:text-gray-400 mb-2 px-1">{t("Profile")}</div>
               <div className="bg-white dark:bg-[#1C1C1E] rounded-[20px] overflow-hidden shadow-sm dark:shadow-none transition-colors duration-300">
-                <SettingsItem icon={User} label={t("Account settings")} onClick={() => setActiveModal('account')} />
+                <SettingsItem icon={UserIcon} label={t("Account settings")} onClick={() => setActiveModal('account')} />
                 <SettingsItem icon={Database} label={t("Data controls")} onClick={() => setActiveModal('data')} hideBorder />
               </div>
             </div>
@@ -136,7 +141,7 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings }: S
                   onClick={handleAuthToggle}
                   className="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 >
-                  {isLoggedIn ? (
+                  {user ? (
                     <>
                       <LogOut size={22} className="text-red-500" strokeWidth={1.5} />
                       <span className="text-red-500 text-base">{t("Log out")}</span>
@@ -205,7 +210,7 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings }: S
                     <>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Account settings</h3>
                       <p className="text-gray-600 dark:text-gray-300 mb-4">
-                        {isLoggedIn ? "Logged in as user@example.com" : "You are currently logged out."}
+                        {user ? `Logged in as ${user.email}` : "You are currently logged out."}
                       </p>
                     </>
                   )}

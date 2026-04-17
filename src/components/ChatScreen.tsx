@@ -10,7 +10,7 @@ import { ModelSelector } from "./ModelSelector";
 interface ChatScreenProps {
   messages: Message[];
   isGenerating: boolean;
-  onSendMessage: (text: string, modelOverride?: ModelType) => void;
+  onSendMessage: (text: string, modelOverride?: ModelType, useSearch?: boolean) => void;
   onOpenSidebar: () => void;
   onNewChat: () => void;
   onClearChat: () => void;
@@ -46,12 +46,60 @@ export function ChatScreen({
   const [isThinking, setIsThinking] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
   const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<any>(null);
   const t = useTranslation(language);
 
   // Map local state to the parent's model
   const chatMode = currentModel === "V3" ? "instant" : "expert";
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = true;
+        
+        recognitionRef.current.onresult = (event: any) => {
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            }
+          }
+          if (finalTranscript) {
+            setInput((prev) => prev + (prev.length > 0 ? ' ' : '') + finalTranscript);
+            if (textareaRef.current) {
+              textareaRef.current.style.height = "auto";
+              textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+            }
+          }
+        };
+
+        recognitionRef.current.onend = () => {
+          setIsRecording(false);
+        };
+      }
+    }
+  }, []);
+
+  const toggleRecording = () => {
+    triggerHaptic();
+    if (isRecording) {
+      recognitionRef.current?.stop();
+    } else {
+      if (recognitionRef.current) {
+        recognitionRef.current.start();
+        setIsRecording(true);
+      } else {
+        alert("Speech recognition is not supported in this browser.");
+      }
+    }
+  };
 
   const triggerHaptic = () => {
     if (!hapticFeedback) return;
@@ -110,7 +158,7 @@ export function ChatScreen({
         onModelChange("R1");
         modelOverride = "R1";
       }
-      onSendMessage(input.trim(), modelOverride);
+      onSendMessage(input.trim(), modelOverride, isSearch);
       setInput("");
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
@@ -268,13 +316,31 @@ export function ChatScreen({
                   onClick={handleSend}
                   disabled={isGenerating}
                   className="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors disabled:opacity-50"
+                  title={t("Send message")}
                 >
                   <ArrowUp size={20} />
                 </button>
               ) : (
                 <>
-                  <button className="hover:text-gray-600 dark:hover:text-white transition-colors"><PlusCircle size={24} strokeWidth={1.5} /></button>
-                  <button className="hover:text-gray-600 dark:hover:text-white transition-colors"><Radio size={24} strokeWidth={1.5} /></button>
+                  <label className="hover:text-gray-600 dark:hover:text-white transition-colors cursor-pointer" title={t("Upload File")}>
+                    <input type="file" className="hidden" onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setInput(`[Uploaded File: ${file.name}] `);
+                        if (textareaRef.current) {
+                          textareaRef.current.focus();
+                        }
+                      }
+                    }} />
+                    <PlusCircle size={24} strokeWidth={1.5} />
+                  </label>
+                  <button 
+                    onClick={toggleRecording}
+                    className={cn("transition-colors", isRecording ? "text-red-500 animate-pulse" : "hover:text-gray-600 dark:hover:text-white")}
+                    title={isRecording ? t("Stop recording") : t("Voice input")}
+                  >
+                    <Radio size={24} strokeWidth={1.5} />
+                  </button>
                 </>
               )}
             </div>

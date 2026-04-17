@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { ChatScreen } from './components/ChatScreen';
 import { Sidebar } from './components/Sidebar';
 import { SettingsSheet } from './components/SettingsSheet';
+import { LoginScreen } from './components/LoginScreen';
 import { ChatSession, Message, AppSettings, DEFAULT_SETTINGS } from './types';
 import { generateChatResponse, ModelType } from './lib/gemini';
+import { useAuth } from './lib/AuthContext';
+import { subscribeToChats, saveChatToFirestore, deleteChatFromFirestore } from './lib/firestore';
 
 export default function App() {
+  const { user, loading } = useAuth();
   const [chats, setChats] = useState<ChatSession[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
@@ -18,6 +22,21 @@ export default function App() {
 
   const currentChat = chats.find(c => c.id === currentChatId);
   const currentModel = currentChat?.model || settings.defaultModel;
+
+  useEffect(() => {
+    let unsubscribe: () => void;
+    if (user) {
+      unsubscribe = subscribeToChats(user.uid, (fetchedChats) => {
+        setChats(fetchedChats);
+      });
+    } else {
+      setChats([]);
+      setCurrentChatId(null);
+    }
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [user]);
 
   useEffect(() => {
     // Apply appearance - Force dark mode for Venom theme
@@ -39,15 +58,24 @@ export default function App() {
   };
 
   const handleDeleteChat = (id: string) => {
-    setChats(prev => prev.filter(c => c.id !== id));
+    if (!user) {
+      setChats(prev => prev.filter(c => c.id !== id));
+    } else {
+      deleteChatFromFirestore(user.uid, id);
+    }
     if (currentChatId === id) {
       setCurrentChatId(null);
     }
   };
 
   const handleClearChat = () => {
-    if (currentChatId) {
-      setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, messages: [] } : c));
+    if (currentChatId && currentChat) {
+      const updated = { ...currentChat, messages: [] };
+      if (!user) {
+        setChats(prev => prev.map(c => c.id === currentChatId ? updated : c));
+      } else {
+        saveChatToFirestore(user.uid, updated);
+      }
     }
   };
 
@@ -65,7 +93,7 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleSendMessage = async (text: string, modelOverride?: ModelType) => {
+  const handleSendMessage = async (text: string, modelOverride?: ModelType, useSearch?: boolean) => {
     let chatId = currentChatId;
     let newChats = [...chats];
     let chatIndex = newChats.findIndex(c => c.id === chatId);
@@ -78,6 +106,7 @@ export default function App() {
     };
 
     const modelToUse = modelOverride || (chatIndex !== -1 ? newChats[chatIndex].model : settings.defaultModel);
+    let updatedChat: ChatSession;
 
     if (!chatId || chatIndex === -1) {
       // Create new chat
@@ -92,21 +121,31 @@ export default function App() {
       newChats.unshift(newChat);
       setCurrentChatId(chatId);
       chatIndex = 0;
+      updatedChat = newChat;
     } else {
-      newChats[chatIndex].messages.push(userMessage);
-      newChats[chatIndex].updatedAt = Date.now();
+      updatedChat = {
+        ...newChats[chatIndex],
+        messages: [...newChats[chatIndex].messages, userMessage],
+        updatedAt: Date.now()
+      };
       if (modelOverride) {
-        newChats[chatIndex].model = modelOverride;
+        updatedChat.model = modelOverride;
       }
+      newChats[chatIndex] = updatedChat;
     }
 
-    setChats(newChats);
+    if (!user) {
+      setChats(newChats);
+    } else {
+      await saveChatToFirestore(user.uid, updatedChat);
+    }
+    
     setIsGenerating(true);
 
     const assistantMessageId = (Date.now() + 1).toString();
 
     try {
-      const messagesForApi = newChats[chatIndex].messages.map(m => ({
+      const messagesForApi = updatedChat.messages.map(m => ({
         role: m.role,
         parts: [{ text: m.content }]
       }));
@@ -116,20 +155,31 @@ export default function App() {
         modelToUse,
         settings.temperature,
         settings.topP,
-        settings.maxTokens
+        settings.maxTokens,
+        useSearch
       );
 
       let assistantContent = "";
-
-      // Add empty assistant message
-      newChats = [...newChats];
-      newChats[chatIndex].messages.push({
+      
+      const assistantMessage: Message = {
         id: assistantMessageId,
         role: "model",
         content: "",
         timestamp: Date.now()
-      });
-      setChats(newChats);
+      };
+      
+      updatedChat = {
+        ...updatedChat,
+        messages: [...updatedChat.messages, assistantMessage]
+      };
+
+      if (!user) {
+        let tempChats = [...newChats];
+        tempChats[chatIndex] = updatedChat;
+        setChats(tempChats);
+      } else {
+        await saveChatToFirestore(user.uid, updatedChat);
+      }
 
       let lastUpdateTime = Date.now();
       
@@ -137,68 +187,84 @@ export default function App() {
         assistantContent += chunk.text;
         
         const now = Date.now();
-        // Update state at most every 50ms to prevent lag
-        if (now - lastUpdateTime > 50) {
-          setChats(prev => {
-            const updated = [...prev];
-            const idx = updated.findIndex(c => c.id === chatId);
-            if (idx !== -1) {
-              const msgIdx = updated[idx].messages.findIndex(m => m.id === assistantMessageId);
-              if (msgIdx !== -1) {
-                updated[idx].messages[msgIdx].content = assistantContent;
-              }
-            }
-            return updated;
-          });
+        // Update state at most every 500ms to prevent lag and too many DB writes
+        if (now - lastUpdateTime > 500) {
+          const streamChat = {
+             ...updatedChat,
+             messages: updatedChat.messages.map(m => 
+               m.id === assistantMessageId ? { ...m, content: assistantContent } : m
+             )
+          };
+          if (!user) {
+            setChats(prev => prev.map(c => c.id === chatId ? streamChat : c));
+          } else {
+             saveChatToFirestore(user.uid, streamChat); // fire and forget during stream
+          }
           lastUpdateTime = now;
         }
       }
       
-      // Final update to ensure we have the complete content
-      setChats(prev => {
-        const updated = [...prev];
-        const idx = updated.findIndex(c => c.id === chatId);
-        if (idx !== -1) {
-          const msgIdx = updated[idx].messages.findIndex(m => m.id === assistantMessageId);
-          if (msgIdx !== -1) {
-            updated[idx].messages[msgIdx].content = assistantContent;
-          }
-        }
-        return updated;
-      });
+      // Final update
+      const finalChat = {
+        ...updatedChat,
+        messages: updatedChat.messages.map(m => 
+          m.id === assistantMessageId ? { ...m, content: assistantContent } : m
+        )
+      };
+      
+      if (!user) {
+        setChats(prev => prev.map(c => c.id === chatId ? finalChat : c));
+      } else {
+        await saveChatToFirestore(user.uid, finalChat);
+      }
+
     } catch (error) {
       console.error("Failed to generate response:", error);
-      // Add or update error message
-      setChats(prev => {
-        const updated = [...prev];
-        const idx = updated.findIndex(c => c.id === chatId);
-        if (idx !== -1) {
-          const msgIdx = updated[idx].messages.findIndex(m => m.id === assistantMessageId);
-          if (msgIdx !== -1) {
-            updated[idx].messages[msgIdx].content = "Sorry, I encountered an error while generating a response. Please try again.";
-          } else {
-            updated[idx].messages.push({
-              id: Date.now().toString(),
-              role: "model",
-              content: "Sorry, I encountered an error while generating a response. Please try again.",
-              timestamp: Date.now()
-            });
-          }
-        }
-        return updated;
-      });
+      const errorChat = {
+        ...updatedChat,
+        messages: [...updatedChat.messages, {
+          id: Date.now().toString(),
+          role: "model" as const,
+          content: "Sorry, I encountered an error while generating a response. Please try again.",
+          timestamp: Date.now()
+        }]
+      };
+      
+      if (!user) {
+        setChats(prev => prev.map(c => c.id === chatId ? errorChat : c));
+      } else {
+        await saveChatToFirestore(user.uid, errorChat);
+      }
+
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleSelectModel = (model: ModelType) => {
-    if (currentChatId) {
-      setChats(prev => prev.map(c => c.id === currentChatId ? { ...c, model } : c));
+    if (currentChatId && currentChat) {
+      const updated = { ...currentChat, model };
+      if (!user) {
+        setChats(prev => prev.map(c => c.id === currentChatId ? updated : c));
+      } else {
+        saveChatToFirestore(user.uid, updated);
+      }
     } else {
       setSettings(prev => ({ ...prev, defaultModel: model }));
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#F5F5F7] dark:bg-[#1E1E2E] transition-colors duration-300">
+        <div className="w-8 h-8 border-4 border-gray-300 dark:border-gray-600 border-t-black dark:border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginScreen />;
+  }
 
   return (
     <div className="flex h-screen w-full bg-[#F5F5F7] dark:bg-[#1E1E2E] overflow-hidden font-sans transition-colors duration-300">

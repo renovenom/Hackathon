@@ -1,0 +1,38 @@
+{
+  "entities": {
+    "Message": {
+      "title": "Message",
+      "description": "A chat message",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "model"] },
+        "content": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "role", "content", "timestamp"]
+    },
+    "ChatSession": {
+      "title": "ChatSession",
+      "description": "A conversation session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "messages": {
+          "type": "array",
+          "items": { "$ref": "Message" }
+        },
+        "updatedAt": { "type": "number" },
+        "model": { "type": "string" }
+      },
+      "required": ["id", "title", "messages", "updatedAt", "model"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/chats/{chatId}": {
+      "schema": { "$ref": "ChatSession" },
+      "description": "User chat sessions stored by chatId"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} { allow read, write: if false; }
+    
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isValidMessage(msg) {
+      return msg.keys().hasAll(['id', 'role', 'content', 'timestamp']) &&
+             msg.keys().size() == 4 &&
+             msg.id is string && msg.id.size() <= 128 &&
+             msg.role is string && (msg.role == 'user' || msg.role == 'model') &&
+             msg.content is string && msg.content.size() <= 100000 &&
+             msg.timestamp is number;
+    }
+
+    function isValidChatSession(data) {
+      return data.keys().hasAll(['id', 'title', 'messages', 'updatedAt', 'model']) &&
+             data.keys().size() <= 5 &&
+             data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.updatedAt is number &&
+             data.model is string && data.model.size() <= 100 &&
+             data.messages is list && data.messages.size() <= 1000 &&
+             (data.messages.size() == 0 || isValidMessage(data.messages[0]));
+    }
+
+    match /users/{userId}/chats/{chatId} {
+      allow get: if isSignedIn() && request.auth.uid == userId && isValidId(chatId);
+      allow list: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidId(chatId) &&
+                    isValidChatSession(incoming());
+      allow update: if isSignedIn() && request.auth.uid == userId && isValidId(chatId) &&
+                    isValidChatSession(incoming()) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['messages', 'updatedAt', 'title', 'model']);
+      allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(chatId);
+    }
+    
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

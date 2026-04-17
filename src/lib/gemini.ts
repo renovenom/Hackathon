@@ -7,7 +7,8 @@ export async function* generateChatResponse(
   modelType: ModelType,
   temperature: number = 0.7,
   topP: number = 0.95,
-  maxOutputTokens?: number
+  maxOutputTokens?: number,
+  useSearch?: boolean
 ) {
   let modelName = "gemini-3-flash-preview";
 
@@ -35,6 +36,8 @@ export async function* generateChatResponse(
       model: modelName,
       contents: formattedMessages,
       config: {
+        tools: useSearch ? [{ googleSearch: {} }] : undefined,
+        systemInstruction: "You are an extremely accurate, helpful, and logical AI assistant. For any factual, coding, or analytical queries, analyze step-by-step and provide the most accurate possible answer.",
         temperature: modelType === "R1" ? undefined : temperature,
         topP: modelType === "R1" ? undefined : topP,
       }
