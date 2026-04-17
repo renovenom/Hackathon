@@ -40,6 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
       console.error("Google sign-in failed:", error);
+      alert(`Google Sign-In failed: ${error?.message || "Unknown error"}. Check console for details.`);
     }
   };
 
