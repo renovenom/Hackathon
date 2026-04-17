@@ -262,10 +262,6 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    return <LoginScreen />;
-  }
-
   return (
     <div className="flex h-screen w-full bg-[#F5F5F7] dark:bg-[#1E1E2E] overflow-hidden font-sans transition-colors duration-300">
       <Sidebar 

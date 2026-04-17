@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { ChatSession } from "@/types";
-import { Plus, MessageSquare, Settings, X, Trash2, History } from "lucide-react";
+import { Plus, MessageSquare, Settings, X, Trash2, History, LogIn, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
+import { useAuth } from "@/lib/AuthContext";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose, chats, currentChat, currentChatId, onSelectChat, onNewChat, onDeleteChat, onOpenSettings, language, onReusePrompt }: SidebarProps) {
   const t = useTranslation(language);
+  const { user, signInWithGoogle, logout } = useAuth();
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
 
   const confirmDelete = () => {
@@ -112,7 +114,27 @@ export function Sidebar({ isOpen, onClose, chats, currentChat, currentChatId, on
           )}
         </div>
 
-        <div className="p-4 border-t border-gray-200 dark:border-[#2A2A35]">
+        <div className="p-4 border-t border-gray-200 dark:border-[#2A2A35] flex flex-col gap-2">
+          {!user ? (
+            <button 
+              onClick={() => { signInWithGoogle(); onClose(); }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-[#2A2A35] hover:text-gray-900 dark:hover:text-white transition-colors text-sm"
+            >
+              <LogIn size={18} />
+              <span>{t("Log In / Sync")}</span>
+            </button>
+          ) : (
+            <button 
+              onClick={() => { logout(); onClose(); }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-[#2A2A35] hover:text-gray-900 dark:hover:text-white transition-colors text-sm"
+            >
+              <LogOut size={18} />
+              <div className="flex flex-col overflow-hidden">
+                <span>{t("Log Out")}</span>
+                <span className="text-[10px] text-gray-400 truncate">{user.email}</span>
+              </div>
+            </button>
+          )}
           <button 
             onClick={() => { onOpenSettings(); onClose(); }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-[#2A2A35] hover:text-gray-900 dark:hover:text-white transition-colors text-sm"
