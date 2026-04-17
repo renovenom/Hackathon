@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { AppSettings } from "@/types";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight, User, Database, Globe, Moon, Type, Mic, Info, FileText, HelpCircle, LogOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Database, Globe, Moon, Type, Mic, Info, FileText, HelpCircle, LogOut, LogIn, X } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
 interface SettingsSheetProps {
@@ -32,6 +32,8 @@ const SettingsItem = ({ icon: Icon, label, value, onClick, hideBorder = false }:
 
 export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings }: SettingsSheetProps) {
   const t = useTranslation(settings.language);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
 
   const cycleLanguage = () => {
     const langs = ["English", "Spanish", "French", "German", "Chinese"];
@@ -55,6 +57,10 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings }: S
     const langs = ["Use App language", "English", "Spanish", "French", "German", "Chinese"];
     const next = langs[(langs.indexOf(settings.mainLanguage) + 1) % langs.length];
     onUpdateSettings({ ...settings, mainLanguage: next });
+  };
+
+  const handleAuthToggle = () => {
+    setIsLoggedIn(!isLoggedIn);
   };
 
   return (
@@ -81,8 +87,8 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings }: S
             <div className="mb-6">
               <div className="text-[0.8125rem] font-medium text-gray-500 dark:text-gray-400 mb-2 px-1">{t("Profile")}</div>
               <div className="bg-white dark:bg-[#1C1C1E] rounded-[20px] overflow-hidden shadow-sm dark:shadow-none transition-colors duration-300">
-                <SettingsItem icon={User} label={t("Account settings")} />
-                <SettingsItem icon={Database} label={t("Data controls")} hideBorder />
+                <SettingsItem icon={User} label={t("Account settings")} onClick={() => setActiveModal('account')} />
+                <SettingsItem icon={Database} label={t("Data controls")} onClick={() => setActiveModal('data')} hideBorder />
               </div>
             </div>
 
@@ -111,24 +117,36 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings }: S
             <div className="mb-6">
               <div className="text-[0.8125rem] font-medium text-gray-500 dark:text-gray-400 mb-2 px-1">{t("About")}</div>
               <div className="bg-white dark:bg-[#1C1C1E] rounded-[20px] overflow-hidden shadow-sm dark:shadow-none transition-colors duration-300">
-                <SettingsItem icon={Info} label={t("Check for updates")} value="1.8.4(194)" />
-                <SettingsItem icon={FileText} label={t("Service agreement")} hideBorder />
+                <SettingsItem icon={Info} label={t("Check for updates")} value="1.8.4(194)" onClick={() => setActiveModal('updates')} />
+                <SettingsItem icon={FileText} label={t("Service agreement")} onClick={() => setActiveModal('agreement')} hideBorder />
               </div>
             </div>
 
             {/* Help & Feedback */}
             <div className="mb-6">
               <div className="bg-white dark:bg-[#1C1C1E] rounded-[20px] overflow-hidden shadow-sm dark:shadow-none transition-colors duration-300">
-                <SettingsItem icon={HelpCircle} label={t("Help & Feedback")} hideBorder />
+                <SettingsItem icon={HelpCircle} label={t("Help & Feedback")} onClick={() => setActiveModal('help')} hideBorder />
               </div>
             </div>
 
-            {/* Log out */}
+            {/* Log out / Log in */}
             <div className="mb-8">
               <div className="bg-white dark:bg-[#1C1C1E] rounded-[20px] overflow-hidden shadow-sm dark:shadow-none transition-colors duration-300">
-                <button className="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                  <LogOut size={22} className="text-gray-600 dark:text-gray-300" strokeWidth={1.5} />
-                  <span className="text-gray-900 dark:text-[#EAEAEF] text-base">{t("Log out")}</span>
+                <button 
+                  onClick={handleAuthToggle}
+                  className="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                >
+                  {isLoggedIn ? (
+                    <>
+                      <LogOut size={22} className="text-red-500" strokeWidth={1.5} />
+                      <span className="text-red-500 text-base">{t("Log out")}</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn size={22} className="text-red-500" strokeWidth={1.5} />
+                      <span className="text-red-500 text-base">{t("Log in")}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -137,6 +155,71 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings }: S
               <p className="text-[0.8125rem] text-gray-500">{t("AI-generated, for reference only. Use legally.")}</p>
             </div>
           </div>
+
+          {/* Modals */}
+          <AnimatePresence>
+            {activeModal && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
+                onClick={() => setActiveModal(null)}
+              >
+                <motion.div 
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white dark:bg-[#1C1C1E] rounded-2xl p-6 max-w-sm w-full shadow-xl relative"
+                >
+                  <button 
+                    onClick={() => setActiveModal(null)}
+                    className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  >
+                    <X size={20} />
+                  </button>
+                  
+                  {activeModal === 'updates' && (
+                    <>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Check for updates</h3>
+                      <p className="text-gray-600 dark:text-gray-300">You are already on the latest version (1.8.4).</p>
+                    </>
+                  )}
+                  {activeModal === 'agreement' && (
+                    <>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Service agreement</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm h-40 overflow-y-auto pr-2">
+                        By using Venom AI, you agree to our terms of service. This is a dark hackathon project and is provided "as is" without any warranties. Embrace the symbiote responsibly. We reserve the right to terminate access at any time.
+                      </p>
+                    </>
+                  )}
+                  {activeModal === 'help' && (
+                    <>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Help & Feedback</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-4">Need help or want to provide feedback?</p>
+                      <a href="mailto:support@venom.ai" className="text-red-500 font-medium">Contact Support</a>
+                    </>
+                  )}
+                  {activeModal === 'account' && (
+                    <>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Account settings</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-4">
+                        {isLoggedIn ? "Logged in as user@example.com" : "You are currently logged out."}
+                      </p>
+                    </>
+                  )}
+                  {activeModal === 'data' && (
+                    <>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Data controls</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-4">Manage your data and privacy settings here.</p>
+                      <button className="text-red-500 font-medium text-sm">Delete all my data</button>
+                    </>
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>

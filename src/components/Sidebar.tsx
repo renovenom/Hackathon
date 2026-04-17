@@ -49,7 +49,7 @@ export function Sidebar({ isOpen, onClose, chats, currentChat, currentChatId, on
         <div className="p-4 flex items-center justify-between">
           <button 
             onClick={() => { onNewChat(); onClose(); }}
-            className="flex-1 flex items-center gap-2 bg-white dark:bg-[#2A2A35] hover:bg-gray-50 dark:hover:bg-[#3A3A45] text-gray-900 dark:text-white px-4 py-2.5 rounded-xl transition-colors shadow-sm dark:shadow-none"
+            className="flex-1 flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl transition-colors shadow-sm dark:shadow-[0_0_15px_rgba(239,68,68,0.15)]"
           >
             <Plus size={18} />
             <span className="font-medium">{t("New Chat")}</span>

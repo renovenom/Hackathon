@@ -20,14 +20,11 @@ export default function App() {
   const currentModel = currentChat?.model || settings.defaultModel;
 
   useEffect(() => {
-    // Apply appearance
-    const isDark = settings.appearance === 'Dark' || 
-      (settings.appearance === 'System' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    // Apply appearance - Force dark mode for Venom theme
+    const isDark = true;
     
     if (isDark) {
       document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
     }
 
     // Apply font size
@@ -68,7 +65,7 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleSendMessage = async (text: string) => {
+  const handleSendMessage = async (text: string, modelOverride?: ModelType) => {
     let chatId = currentChatId;
     let newChats = [...chats];
     let chatIndex = newChats.findIndex(c => c.id === chatId);
@@ -80,6 +77,8 @@ export default function App() {
       timestamp: Date.now()
     };
 
+    const modelToUse = modelOverride || (chatIndex !== -1 ? newChats[chatIndex].model : settings.defaultModel);
+
     if (!chatId || chatIndex === -1) {
       // Create new chat
       chatId = Date.now().toString();
@@ -88,7 +87,7 @@ export default function App() {
         title: text.slice(0, 30) + (text.length > 30 ? "..." : ""),
         messages: [userMessage],
         updatedAt: Date.now(),
-        model: settings.defaultModel
+        model: modelToUse
       };
       newChats.unshift(newChat);
       setCurrentChatId(chatId);
@@ -96,10 +95,15 @@ export default function App() {
     } else {
       newChats[chatIndex].messages.push(userMessage);
       newChats[chatIndex].updatedAt = Date.now();
+      if (modelOverride) {
+        newChats[chatIndex].model = modelOverride;
+      }
     }
 
     setChats(newChats);
     setIsGenerating(true);
+
+    const assistantMessageId = (Date.now() + 1).toString();
 
     try {
       const messagesForApi = newChats[chatIndex].messages.map(m => ({
@@ -109,13 +113,12 @@ export default function App() {
 
       const stream = await generateChatResponse(
         messagesForApi,
-        newChats[chatIndex].model,
+        modelToUse,
         settings.temperature,
         settings.topP,
         settings.maxTokens
       );
 
-      const assistantMessageId = (Date.now() + 1).toString();
       let assistantContent = "";
 
       // Add empty assistant message
@@ -128,34 +131,59 @@ export default function App() {
       });
       setChats(newChats);
 
+      let lastUpdateTime = Date.now();
+      
       for await (const chunk of stream) {
         assistantContent += chunk.text;
         
-        setChats(prev => {
-          const updated = [...prev];
-          const idx = updated.findIndex(c => c.id === chatId);
-          if (idx !== -1) {
-            const msgIdx = updated[idx].messages.findIndex(m => m.id === assistantMessageId);
-            if (msgIdx !== -1) {
-              updated[idx].messages[msgIdx].content = assistantContent;
+        const now = Date.now();
+        // Update state at most every 50ms to prevent lag
+        if (now - lastUpdateTime > 50) {
+          setChats(prev => {
+            const updated = [...prev];
+            const idx = updated.findIndex(c => c.id === chatId);
+            if (idx !== -1) {
+              const msgIdx = updated[idx].messages.findIndex(m => m.id === assistantMessageId);
+              if (msgIdx !== -1) {
+                updated[idx].messages[msgIdx].content = assistantContent;
+              }
             }
-          }
-          return updated;
-        });
+            return updated;
+          });
+          lastUpdateTime = now;
+        }
       }
-    } catch (error) {
-      console.error("Failed to generate response:", error);
-      // Add error message
+      
+      // Final update to ensure we have the complete content
       setChats(prev => {
         const updated = [...prev];
         const idx = updated.findIndex(c => c.id === chatId);
         if (idx !== -1) {
-          updated[idx].messages.push({
-            id: Date.now().toString(),
-            role: "model",
-            content: "Sorry, I encountered an error while generating a response. Please try again.",
-            timestamp: Date.now()
-          });
+          const msgIdx = updated[idx].messages.findIndex(m => m.id === assistantMessageId);
+          if (msgIdx !== -1) {
+            updated[idx].messages[msgIdx].content = assistantContent;
+          }
+        }
+        return updated;
+      });
+    } catch (error) {
+      console.error("Failed to generate response:", error);
+      // Add or update error message
+      setChats(prev => {
+        const updated = [...prev];
+        const idx = updated.findIndex(c => c.id === chatId);
+        if (idx !== -1) {
+          const msgIdx = updated[idx].messages.findIndex(m => m.id === assistantMessageId);
+          if (msgIdx !== -1) {
+            updated[idx].messages[msgIdx].content = "Sorry, I encountered an error while generating a response. Please try again.";
+          } else {
+            updated[idx].messages.push({
+              id: Date.now().toString(),
+              role: "model",
+              content: "Sorry, I encountered an error while generating a response. Please try again.",
+              timestamp: Date.now()
+            });
+          }
         }
         return updated;
       });

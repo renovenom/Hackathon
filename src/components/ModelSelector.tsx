@@ -14,27 +14,27 @@ export function ModelSelector({ isOpen, onClose, currentModel, onSelectModel }: 
   const models: { id: ModelType; name: string; description: string; strengths: string; useCases: string; icon: React.ReactNode; badge?: string }[] = [
     {
       id: "V3",
-      name: "Hackathon-Chat",
-      description: "Balanced model for general use. Great for drafting emails, brainstorming ideas, and answering general knowledge questions.",
-      strengths: "High accuracy, broad knowledge base, excellent at coding and logic.",
+      name: "Venom-Chat",
+      description: "Balanced symbiote model for general use. Great for drafting emails, brainstorming ideas, and answering general knowledge questions.",
+      strengths: "High accuracy, broad knowledge base, aggressive at coding and logic.",
       useCases: "General queries, programming, analysis, and creative writing.",
-      icon: <Brain size={20} className="text-[#0066FF]" />,
-      badge: "Default"
+      icon: <Brain size={20} className="text-red-500" />,
+      badge: "Lethal"
     },
     {
       id: "R1",
-      name: "Hackathon-Reasoner",
-      description: "Advanced chain-of-thought model. Best for debugging complex code, solving math problems, and deep logical analysis.",
-      strengths: "Transparent reasoning, rigorous problem-solving, reduced hallucinations.",
+      name: "Venom-Reasoner",
+      description: "Advanced chain-of-thought model. Best for deep structural analysis, complex hunting, and solving logic puzzles.",
+      strengths: "Transparent reasoning, rigorous problem-solving, symbiotic adaptation.",
       useCases: "Math, complex logic puzzles, multi-step planning, debugging code.",
       icon: <Zap size={20} className="text-purple-500" />,
-      badge: "Reasoning"
+      badge: "Symbiote"
     },
     {
       id: "Lite",
-      name: "Hackathon-Lite",
-      description: "Optimized for speed and efficiency. Perfect for quick translations, short summaries, and casual conversation.",
-      strengths: "High speed, low latency, resource-efficient.",
+      name: "Venom-Lite",
+      description: "Optimized for raw speed and efficiency. Perfect for quick translations, short summaries, and rapid strikes.",
+      strengths: "High speed, low latency, viciously efficient.",
       useCases: "Quick questions, quick translations, summarization, casual chat.",
       icon: <Feather size={20} className="text-green-500" />,
       badge: "Fast"
@@ -89,7 +89,7 @@ export function ModelSelector({ isOpen, onClose, currentModel, onSelectModel }: 
                     </div>
                   </div>
                   {currentModel === model.id && (
-                    <Check size={20} className="text-[#0066FF] absolute right-4 top-1/2 -translate-y-1/2" />
+                    <Check size={20} className="text-red-500 absolute right-4 top-1/2 -translate-y-1/2" />
                   )}
                 </button>
               ))}

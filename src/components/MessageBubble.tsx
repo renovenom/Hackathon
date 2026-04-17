@@ -74,8 +74,8 @@ export function MessageBubble({ message, onDelete, onRegenerate, showReasoningDe
         className={cn(
           "max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 relative transition-colors duration-300",
           isUser 
-            ? "bg-[#0066FF] text-white rounded-tr-sm" 
-            : "bg-white dark:bg-[#2A2A35] text-gray-900 dark:text-[#EAEAEF] rounded-tl-sm shadow-sm dark:shadow-none border border-gray-100 dark:border-transparent"
+            ? "bg-red-600 text-white rounded-tr-sm border-2 border-red-700/50 shadow-md ring-1 ring-red-500/20" 
+            : "bg-white dark:bg-[#15151E] text-gray-900 dark:text-[#EAEAEF] rounded-tl-sm shadow-sm dark:shadow-[0_0_20px_rgba(16,185,129,0.05)] border border-gray-100 dark:border-green-500/20"
         )}
         onContextMenu={(e) => {
           e.preventDefault();

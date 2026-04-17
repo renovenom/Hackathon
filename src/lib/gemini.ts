@@ -1,3 +1,5 @@
+import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
+
 export type ModelType = "V3" | "R1" | "Lite";
 
 export async function* generateChatResponse(
@@ -7,106 +9,47 @@ export async function* generateChatResponse(
   topP: number = 0.95,
   maxOutputTokens?: number
 ) {
-  let modelName = "deepseek-chat";
+  let modelName = "gemini-3-flash-preview";
 
   if (modelType === "R1") {
-    modelName = "deepseek-reasoner";
-  } else {
-    modelName = "deepseek-chat";
+    modelName = "gemini-3.1-pro-preview";
+  } else if (modelType === "Lite") {
+    modelName = "gemini-3.1-flash-lite-preview";
   }
 
-  const API_KEY = "sk-ed461a92d1fc4d4eb738d649a29607ef";
-  const API_URL = "https://api.deepseek.com/chat/completions";
+  // Use process.env for the real key inside AI Studio
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is missing. Please set it in your environment.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
 
   const formattedMessages = messages.map(m => ({
-    role: m.role === "model" ? "assistant" : "user",
-    content: m.parts[0].text
+    role: m.role,
+    parts: m.parts,
   }));
 
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${API_KEY}`
-      },
-      body: JSON.stringify({
-        model: modelName,
-        messages: formattedMessages,
-        stream: true,
-        temperature: modelType === "R1" ? undefined : temperature, // DeepSeek R1 might not support temperature tuning in the same way
-        top_p: modelType === "R1" ? undefined : topP,
-        max_tokens: maxOutputTokens
-      })
+    const responseStream = await ai.models.generateContentStream({
+      model: modelName,
+      contents: formattedMessages,
+      config: {
+        temperature: modelType === "R1" ? undefined : temperature,
+        topP: modelType === "R1" ? undefined : topP,
+      }
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`DeepSeek API Error: ${response.status} ${errorData.error?.message || response.statusText}`);
-    }
-
-    if (!response.body) {
-      throw new Error("No response body");
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-    let isReasoning = false;
-    let hasStartedReasoning = false;
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
-
-      for (const line of lines) {
-        if (line.trim() === "") continue;
-        if (line.trim() === "data: [DONE]") return;
-
-        if (line.startsWith("data: ")) {
-          try {
-            const data = JSON.parse(line.slice(6));
-            const delta = data.choices[0]?.delta;
-            if (!delta) continue;
-
-            let chunkText = "";
-
-            if (delta.reasoning_content) {
-              if (!hasStartedReasoning) {
-                chunkText += "<reasoning>\n";
-                hasStartedReasoning = true;
-                isReasoning = true;
-              }
-              chunkText += delta.reasoning_content;
-            } else if (delta.content) {
-              if (isReasoning) {
-                chunkText += "\n</reasoning>\n\n";
-                isReasoning = false;
-              }
-              chunkText += delta.content;
-            }
-
-            if (chunkText) {
-              yield { text: chunkText };
-            }
-          } catch (e) {
-            console.warn("Error parsing stream line:", line, e);
-          }
-        }
+    for await (const chunk of responseStream) {
+      const c = chunk as GenerateContentResponse;
+      if (c.text) {
+        yield { text: c.text };
       }
     }
 
-    // If stream ended while reasoning was still open (shouldn't happen usually, but just in case)
-    if (isReasoning) {
-      yield { text: "\n</reasoning>\n\n" };
-    }
-
   } catch (error) {
-    console.error("API Error:", error);
+    console.error("Gemini API Error:", error);
     throw error;
   }
 }
+

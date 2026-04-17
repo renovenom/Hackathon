@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -8,51 +8,50 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: #F5F5F7;
-  color: #1C1C1E;
+  background-color: #000000;
+  color: #f1f5f9;
 }
 
-.dark body {
-  background-color: #1E1E2E;
+/* Force dark mode styling effectively onto everything by default based on request */
+.dark body, body {
+  background-color: #050505;
+  background-image: radial-gradient(circle at 50% 0%, #1a0000 0%, #050505 60%);
   color: #EAEAEF;
 }
 
 .markdown-body pre {
   font-family: var(--font-mono);
-  background-color: #F3F4F6 !important;
-  border: 1px solid #E5E7EB;
+  background-color: #111111 !important;
+  border: 1px solid #2A0808;
   border-radius: 0.5rem;
   padding: 1rem;
   overflow-x: auto;
 }
 
-.dark .markdown-body pre {
-  background-color: #15151E !important;
-  border: 1px solid #3A3A45;
+.dark .markdown-body pre, .markdown-body pre {
+  background-color: #09090b !important;
+  border: 1px solid #3f0f0f;
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.05);
 }
 
 .markdown-body code {
   font-family: var(--font-mono);
-  background-color: #F3F4F6;
-  color: #1F2937;
+  background-color: #18181b;
+  color: #10b981;
   padding: 0.2em 0.4em;
   border-radius: 0.25rem;
   font-size: 85%;
 }
 
-.dark .markdown-body code {
-  background-color: #3A3A45;
-  color: #EAEAEF;
+.dark .markdown-body code, .markdown-body code {
+  background-color: #18181b;
+  color: #10b981;
 }
 
 .markdown-body pre code {
-  background-color: transparent;
-  color: inherit;
+  background-color: transparent !important;
+  color: #e2e8f0 !important;
   padding: 0;
   border-radius: 0;
   font-size: 100%;
-}
-
-.dark .markdown-body pre code {
-  background-color: transparent;
 }
