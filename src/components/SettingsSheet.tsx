@@ -108,7 +108,7 @@ const UpdateChecker = () => {
             <Check size={28} strokeWidth={3} />
           </div>
           <p className="text-gray-900 dark:text-white font-medium mb-1">Update Complete</p>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Gemini UI is now running exactly with the latest patch.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Hackathon UI is now running exactly with the latest patch.</p>
           
           <button 
             onClick={() => window.location.reload()}
@@ -262,7 +262,7 @@ const AccountEditor = () => {
           type="text" 
           value={displayName}
           onChange={e => setDisplayName(e.target.value)}
-          placeholder="e.g. Gemini User"
+          placeholder="e.g. Hackathon User"
           className="w-full bg-gray-50 dark:bg-[#1e1e24] border border-gray-200 dark:border-[#2a2a35] text-gray-900 dark:text-white rounded-lg px-3 py-2 outline-none focus:border-blue-500 transition-colors text-sm"
         />
       </div>
@@ -496,7 +496,7 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings, onL
                     <>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Service agreement</h3>
                       <p className="text-gray-600 dark:text-gray-300 text-sm h-40 overflow-y-auto pr-2">
-                        By using Gemini-Clone, you agree to our terms of service. This is a learning project and is provided "as is" without any warranties.
+                        By using Hackathon, you agree to our terms of service. This is a learning project and is provided "as is" without any warranties.
                       </p>
                     </>
                   )}

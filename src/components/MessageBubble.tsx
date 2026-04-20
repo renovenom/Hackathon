@@ -4,7 +4,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import { Message } from "@/types";
-import { ChevronDown, ChevronRight, Copy, RefreshCw, Trash2, BrainCircuit } from "lucide-react";
+import { ChevronDown, ChevronRight, Copy, RefreshCw, Trash2, BrainCircuit, Terminal } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface MessageBubbleProps {
@@ -88,7 +88,7 @@ export function MessageBubble({ message, onDelete, onRegenerate, showReasoningDe
     >
       {!isUser && (
         <div className="shrink-0 mr-4 mt-1 hidden md:flex h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 items-center justify-center text-white p-1">
-           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l2.44 6.06L21.5 11.5l-6.06 2.44L13 20l-2.44-6.06L4.5 11.5l6.06-2.44L13 3z"/></svg>
+           <Terminal size={16} />
         </div>
       )}
       <div 

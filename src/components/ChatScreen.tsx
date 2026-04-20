@@ -56,12 +56,12 @@ export function ChatScreen({
     if (prevModelRef.current !== currentModel) {
       // Model changed, trigger cue
       const names: Record<string, string> = {
-        V3: "Gemini-Flash",
-        R1: "Gemini-Advanced",
-        Lite: "Gemini-Lite"
+        V3: "Hackathon-Flash",
+        R1: "Hackathon-Advanced",
+        Lite: "Hackathon-Lite"
       };
       
-      setModelSwitchCue({ visible: true, name: names[currentModel] || "Gemini" });
+      setModelSwitchCue({ visible: true, name: names[currentModel] || "Hackathon" });
       
       const timer = setTimeout(() => {
         setModelSwitchCue(prev => prev ? { ...prev, visible: false } : null);
@@ -229,7 +229,7 @@ export function ChatScreen({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/50 dark:bg-[#1e1e24] border border-blue-100 dark:border-[#2a2a35] text-xs font-semibold text-blue-700 dark:text-blue-300 shadow-sm"
             >
               {currentModel === 'R1' ? <Zap size={14} className="text-blue-500" /> : <Feather size={14} className="text-sky-500" />}
-              Gemini-{currentModel === 'R1' ? 'Advanced' : 'Flash'}
+              Hackathon-{currentModel === 'R1' ? 'Advanced' : 'Flash'}
             </button>
           )}
         </div>
@@ -322,7 +322,7 @@ export function ChatScreen({
             value={input}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
-            placeholder={t("Enter a prompt here")}
+            placeholder={t("Chat with Hackathon")}
             className="bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none outline-none px-4 py-3 text-[1.05rem] transition-transform duration-75"
             rows={1}
           />
@@ -393,7 +393,7 @@ export function ChatScreen({
           </div>
         </div>
         <div className="text-center mt-3 text-xs text-gray-500 dark:text-gray-400">
-          Gemini can make mistakes, so double-check it.
+          Hackathon can make mistakes, so double-check it.
         </div>
       </div>
 

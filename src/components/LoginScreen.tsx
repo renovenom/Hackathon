@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { motion } from 'motion/react';
-import { Sparkles, User, Key, LogIn, UserPlus, ArrowLeft } from 'lucide-react';
+import { Terminal, User, Key, LogIn, UserPlus, ArrowLeft } from 'lucide-react';
 
 interface LoginScreenProps {
   onBack?: () => void;
@@ -51,11 +51,11 @@ export function LoginScreen({ onBack }: LoginScreenProps) {
         className="max-w-md w-full bg-white dark:bg-[#1e1e24] rounded-3xl p-8 shadow-sm text-center border border-transparent dark:border-[#2a2a35]"
       >
         <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/20">
-          <Sparkles className="text-white" size={32} />
+          <Terminal className="text-white" size={32} />
         </div>
         
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          {isRegistering ? "Create your Account" : "Welcome to Gemini Clone"}
+          {isRegistering ? "Create your Account" : "Welcome to Hackathon"}
         </h1>
         <p className="text-gray-500 dark:text-gray-400 mb-6 text-[0.9375rem] leading-relaxed">
           {isRegistering 

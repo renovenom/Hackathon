@@ -1,7 +1,7 @@
 import React from "react";
 import { ModelType } from "@/types";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, Zap, Brain, Feather, Sparkles, Code, BrainCircuit } from "lucide-react";
+import { Check, Zap, Brain, Feather, Terminal, Code, BrainCircuit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ModelSelectorProps {
@@ -15,7 +15,7 @@ export function ModelSelector({ isOpen, onClose, currentModel, onSelectModel }: 
   const models: { id: ModelType; name: string; description: string; strengths: string[]; useCases: string; icon: React.ReactNode; badge?: string }[] = [
     {
       id: "V3",
-      name: "Gemini-Flash",
+      name: "Hackathon-Flash",
       description: "Balanced model for everyday logic and rapid execution. Designed for robust chat experience.",
       strengths: ["Broad general training", "Advanced coding generation", "Natural conversation flow"],
       useCases: "General queries, app generation, creative writing, casual discussions.",
@@ -24,7 +24,7 @@ export function ModelSelector({ isOpen, onClose, currentModel, onSelectModel }: 
     },
     {
       id: "R1",
-      name: "Gemini-Advanced",
+      name: "Hackathon-Advanced",
       description: "Deep structural analysis engine. Visualizes its internal 'Chain of Thought' directly in the UI before answering.",
       strengths: ["Transparent thinking process", "Complex mathematical proofs", "Surgical problem-solving"],
       useCases: "Debugging legacy software, complex puzzles, PhD-level analytics, multi-step planning.",
@@ -33,7 +33,7 @@ export function ModelSelector({ isOpen, onClose, currentModel, onSelectModel }: 
     },
     {
       id: "Lite",
-      name: "Gemini-Lite",
+      name: "Hackathon-Lite",
       description: "Streamlined infrastructure optimized for pure speed and ultra low-latency environments.",
       strengths: ["Instant TTFT (Time-To-First-Token)", "Minimal cost logic", "High concurrent speed"],
       useCases: "Quick questions, translations, summaries, rapid rapid-fire texting.",
@@ -63,7 +63,7 @@ export function ModelSelector({ isOpen, onClose, currentModel, onSelectModel }: 
             <div className="w-12 h-1.5 bg-gray-300 dark:bg-[#2a2a35] rounded-full mx-auto mb-6 md:hidden" />
             
             <div className="flex items-center gap-2 mb-6 px-2">
-              <Sparkles size={22} className="text-gray-900 dark:text-white" />
+              <Terminal size={22} className="text-gray-900 dark:text-white" />
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">Choose a Model</h3>
             </div>
             

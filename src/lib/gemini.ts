@@ -19,7 +19,7 @@ export async function* generateChatResponse(
   }
 
   // Use process.env for the real key inside AI Studio
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is missing. Please set it in your environment.");
   }

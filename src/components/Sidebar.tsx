@@ -109,11 +109,11 @@ export function Sidebar({ isOpen, onClose, chats, currentChat, currentChatId, on
           )}
 
           <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 px-2">
-            {searchQuery.trim() ? t("Search Results") : t("Recent")}
+            {searchQuery.trim() ? t("Search Results") : t("Chats")}
           </div>
           {filteredChats.length === 0 ? (
             <div className="text-sm text-gray-500 px-2">
-              {searchQuery.trim() ? t("No matches found") : t("No recent chats")}
+              {searchQuery.trim() ? t("No matches found") : t("No chats")}
             </div>
           ) : (
             <div className="space-y-1">
