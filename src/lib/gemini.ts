@@ -37,7 +37,9 @@ export async function* generateChatResponse(
       contents: formattedMessages,
       config: {
         tools: useSearch ? [{ googleSearch: {} }] : undefined,
-        systemInstruction: "You are an extremely accurate, helpful, and logical AI assistant. For any factual, coding, or analytical queries, analyze step-by-step and provide the most accurate possible answer.",
+        systemInstruction: modelType === "R1" 
+          ? "You are an extremely accurate, helpful, and logical AI assistant. For any factual, coding, or analytical queries, analyze step-by-step. You MUST wrap your detailed internal chain-of-thought reasoning and intermediate steps inside <reasoning>...</reasoning> XML tags before giving the final answer."
+          : "You are an extremely accurate, helpful, and logical AI assistant. For any factual, coding, or analytical queries, analyze step-by-step and provide the most accurate possible answer.",
         temperature: modelType === "R1" ? undefined : temperature,
         topP: modelType === "R1" ? undefined : topP,
       }

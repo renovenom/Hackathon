@@ -17,13 +17,20 @@ export interface ChatSession {
   model: ModelType;
 }
 
+export interface ModelPreferences {
+  temperature: number;
+  topP: number;
+  maxTokens: number;
+}
+
 export interface AppSettings {
   theme: "system" | "light" | "dark";
   fontSize: "small" | "medium" | "large";
   defaultModel: ModelType;
-  temperature: number;
-  topP: number;
-  maxTokens: number;
+  temperature: number; // legacy global
+  topP: number;        // legacy global
+  maxTokens: number;   // legacy global
+  modelPreferences: Record<ModelType, ModelPreferences>;
   showReasoningDefault: boolean;
   hapticFeedback: boolean;
   language: string;
@@ -39,6 +46,11 @@ export const DEFAULT_SETTINGS: AppSettings = {
   temperature: 0.7,
   topP: 0.95,
   maxTokens: 4096,
+  modelPreferences: {
+    V3: { temperature: 0.7, topP: 0.95, maxTokens: 4096 },
+    R1: { temperature: 0.7, topP: 0.95, maxTokens: 8192 },
+    Lite: { temperature: 0.7, topP: 0.95, maxTokens: 2048 },
+  },
   showReasoningDefault: true,
   hapticFeedback: true,
   language: "English",

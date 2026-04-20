@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -8,50 +9,67 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: #000000;
-  color: #f1f5f9;
+  background-color: #F0F4F9;
+  color: #1F1F1F;
 }
 
-/* Force dark mode styling effectively onto everything by default based on request */
-.dark body, body {
-  background-color: #050505;
-  background-image: radial-gradient(circle at 50% 0%, #1a0000 0%, #050505 60%);
-  color: #EAEAEF;
+.dark body, body[data-theme='dark'] {
+  background-color: #131314;
+  background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #131314 60%);
+  color: #E3E3E3;
+}
+
+.gemini-gradient {
+  background: linear-gradient(74deg, #4285f4 0, #9b72cb 9%, #d96570 20%, #d96570 24%, #9b72cb 35%, #4285f4 44%, #9b72cb 50%, #d96570 56%, #131314 75%, #131314 100%);
+  background-size: 400% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .gemini-gradient {
+  background: linear-gradient(74deg, #8ab4f8 0, #c58af9 9%, #f28b82 20%, #f28b82 24%, #c58af9 35%, #8ab4f8 44%, #c58af9 50%, #f28b82 56%, #e3e3e3 75%, #e3e3e3 100%);
+  background-size: 400% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .markdown-body pre {
   font-family: var(--font-mono);
-  background-color: #111111 !important;
-  border: 1px solid #2A0808;
-  border-radius: 0.5rem;
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
   padding: 1rem;
   overflow-x: auto;
 }
 
-.dark .markdown-body pre, .markdown-body pre {
-  background-color: #09090b !important;
-  border: 1px solid #3f0f0f;
-  box-shadow: 0 0 10px rgba(220, 38, 38, 0.05);
+.dark .markdown-body pre {
+  background-color: #1e1e24 !important;
+  border: 1px solid #2a2a35;
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.05);
 }
 
 .markdown-body code {
   font-family: var(--font-mono);
-  background-color: #18181b;
-  color: #10b981;
+  background-color: #e2e8f0;
+  color: #0284c7;
   padding: 0.2em 0.4em;
   border-radius: 0.25rem;
   font-size: 85%;
 }
 
-.dark .markdown-body code, .markdown-body code {
-  background-color: #18181b;
-  color: #10b981;
+.dark .markdown-body code {
+  background-color: #2a2a35;
+  color: #38bdf8;
 }
 
 .markdown-body pre code {
   background-color: transparent !important;
-  color: #e2e8f0 !important;
+  color: #334155 !important;
   padding: 0;
   border-radius: 0;
   font-size: 100%;
+}
+
+.dark .markdown-body pre code {
+  color: #cbd5e1 !important;
 }

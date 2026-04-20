@@ -33,6 +33,12 @@ export const translations: Record<string, Record<string, string>> = {
     "Previous Prompts": "Previous Prompts",
     "Export Chat": "Export Chat",
     "Clear Chat": "Clear Chat",
+    "Search history...": "Search history...",
+    "Search Results": "Search Results",
+    "No matches found": "No matches found",
+    "Manage your data and privacy settings here.": "Manage your data and privacy settings here.",
+    "Delete all my data": "Delete all my data",
+    "Are you sure you want to delete all your local data and log out? This action cannot be undone.": "Are you sure you want to delete all your local data and log out? This action cannot be undone."
   },
   Spanish: {
     "New Chat": "Nuevo chat",

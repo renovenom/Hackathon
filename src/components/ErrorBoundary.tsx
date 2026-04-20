@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
       } catch (e) {}
 
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F5F7] dark:bg-[#1E1E2E] text-gray-900 dark:text-gray-100 p-4 font-sans">
+        <div className="flex flex-col items-center justify-center min-h-screen bg-[#F0F4F9] dark:bg-[#131314] text-gray-900 dark:text-gray-100 p-4 font-sans">
           <h1 className="text-2xl font-bold text-red-500 mb-4">Something went wrong</h1>
           <p className="mb-4 text-center max-w-lg">
             {isFirestoreError 
