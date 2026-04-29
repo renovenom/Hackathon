@@ -1,20 +1,44 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Hackathon Applet
 
-# Run and deploy your AI Studio app
+This is the Hackathon Applet, a web application providing a conversational AI interface. It features modern design elements, user authentication via Firebase, and integrations with multiple AI models out of the box.
 
-This contains everything you need to run your app locally.
+## AI Models
+You can configure and chat with several Hackathon models including:
+- **Hackathon-Flash**
+- **Hackathon-Advanced**
+- **Hackathon-Lite**
+- **Hackathon-Pro**
+- **Hackathon-Flash-8B**
 
-View your app in AI Studio: https://ai.studio/apps/0536991b-ca55-4328-a716-c7c13d422c91
+## Key Features
+- **Responsive Chat Interface**: Built with React and Tailwind CSS for mobile and desktop support.
+- **User Authentication**: Secure user login and profile management using Firebase.
+- **Model Tuning**: Configure advanced properties like Temperature, Max Tokens, and Top-P for each of the available Hackathon models.
+- **Customizable Appearance**: Native support for Light, Dark, and System-synced themes.
+- **Emoji Reactions**: Apply and display emoji reactions on the conversational messages.
+- **Local Data Governance**: Easily delete local history and settings gracefully.
+- **Searchable Chat History**: Quickly locate past discussions with the sidebar search bar.
 
-## Run Locally
+## Technology Stack
+- **Frontend Framework**: React 19 + TypeScript
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
+- **Rich Text Rendering**: React Markdown, Syntax Highlighter
+- **Backend / Auth / Database**: Firebase (Auth & Firestore)
+- **Tooling**: Vite for lightning fast dev builds
 
-**Prerequisites:**  Node.js
-
+## Getting Started
 
 1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+   ```bash
+   npm install
+   ```
+2. Start the development server (runs on `0.0.0.0:3000` by default):
+   ```bash
+   npm run dev
+   ```
+
+## Build & Lint
+- **Build**: `npm run build`
+- **Lint**: `npm run lint`

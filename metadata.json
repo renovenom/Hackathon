@@ -1,6 +1,6 @@
 {
-  "name": "Gemini Clone",
-  "description": "A mobile-first AI chat application featuring multiple reasoning models, chain-of-thought visualization, and a polished sky-themed UI resembling Gemini.",
+  "name": "Hackathon AI",
+  "description": "A mobile-first AI chat application featuring multiple reasoning models (Hackathon-Flash, Hackathon-Pro, etc.), chain-of-thought visualization, and a polished user interface.",
   "requestFramePermissions": [
     "camera",
     "microphone"
