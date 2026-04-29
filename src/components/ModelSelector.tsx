@@ -1,7 +1,7 @@
 import React from "react";
 import { ModelType } from "@/types";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, Zap, Brain, Feather, Terminal, Code, BrainCircuit } from "lucide-react";
+import { Check, Zap, Brain, Feather, Cpu, Code, BrainCircuit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ModelSelectorProps {
@@ -81,7 +81,7 @@ export function ModelSelector({ isOpen, onClose, currentModel, onSelectModel }: 
             <div className="w-12 h-1.5 bg-gray-300 dark:bg-[#2a2a35] rounded-full mx-auto mb-6 md:hidden" />
             
             <div className="flex items-center gap-2 mb-6 px-2">
-              <Terminal size={22} className="text-gray-900 dark:text-white" />
+              <Cpu size={22} className="text-gray-900 dark:text-white" />
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">Choose a Model</h3>
             </div>
             

@@ -4,7 +4,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import { Message } from "@/types";
-import { ChevronDown, ChevronRight, Copy, RefreshCw, Trash2, BrainCircuit, Terminal, Zap, Feather, Check } from "lucide-react";
+import { ChevronDown, ChevronRight, Copy, RefreshCw, Trash2, BrainCircuit, Cpu, Zap, Feather, Check, Smile } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface MessageBubbleProps {
@@ -12,15 +12,30 @@ interface MessageBubbleProps {
   onDelete?: () => void;
   onRegenerate?: () => void;
   showReasoningDefault?: boolean;
+  contentClassName?: string;
 }
 
 import { useAuth } from "@/lib/AuthContext";
 
-export function MessageBubble({ message, onDelete, onRegenerate, showReasoningDefault = false }: MessageBubbleProps) {
+export function MessageBubble({ message, onDelete, onRegenerate, showReasoningDefault = false, contentClassName }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const { user } = useAuth();
   const [showActions, setShowActions] = useState(false);
+  const [showReactionsList, setShowReactionsList] = useState(false);
+  const [reactions, setReactions] = useState<string[]>([]);
   const [reasoningExpanded, setReasoningExpanded] = useState(showReasoningDefault);
+
+  const availableReactions = ["👍", "❤️", "😂", "🎉", "🤔"];
+
+  const handleReact = (emoji: string) => {
+    if (reactions.includes(emoji)) {
+      setReactions(reactions.filter(r => r !== emoji));
+    } else {
+      setReactions([...reactions, emoji]);
+    }
+    setShowReactionsList(false);
+  };
+
 
   // Parse reasoning block if present
   let content = message.content;
@@ -88,7 +103,7 @@ export function MessageBubble({ message, onDelete, onRegenerate, showReasoningDe
     >
       {!isUser && (
         <div className="shrink-0 mr-4 mt-1 hidden md:flex h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 items-center justify-center text-white p-1">
-           <Terminal size={16} />
+           <Cpu size={16} />
         </div>
       )}
       <div 
@@ -163,13 +178,26 @@ export function MessageBubble({ message, onDelete, onRegenerate, showReasoningDe
 
         <div className={cn(
           "markdown-body prose max-w-none text-[16px] leading-relaxed",
-          isUser ? "text-[#1f1f1f] dark:prose-invert dark:text-gray-100" : "dark:prose-invert text-[#1f1f1f] dark:text-[#E3E3E3]"
+          isUser ? "text-[#1f1f1f] dark:prose-invert dark:text-gray-100" : "dark:prose-invert text-[#1f1f1f] dark:text-[#E3E3E3]",
+          contentClassName
         )}>
           <ReactMarkdown components={MarkdownComponents}>{content}</ReactMarkdown>
         </div>
 
+        <div className="flex items-center gap-2 mt-2">
+          {reactions.map((emoji) => (
+            <span key={emoji} className="inline-flex items-center justify-center bg-gray-100 dark:bg-[#2a2a35] rounded-full px-2 py-0.5 text-sm cursor-pointer" onClick={() => handleReact(emoji)}>
+              {emoji}
+            </span>
+          ))}
+        </div>
+
+        <div className={cn("text-[10px] text-gray-400 mt-2 select-none transition-opacity duration-300", showActions ? "opacity-100" : "opacity-0", isUser ? "text-right" : "text-left")}>
+          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </div>
+
         {!isUser && message.model && (
-          <div className="flex items-center gap-1.5 mt-3 text-[11px] font-medium text-gray-400 dark:text-gray-500 select-none">
+          <div className="flex items-center gap-1.5 mt-1 text-[11px] font-medium text-gray-400 dark:text-gray-500 select-none">
             {message.model === 'V3' ? <><Feather size={12} className="text-gray-400" /> Hackathon-Flash</> : 
              message.model === 'R1' ? <><Zap size={12} className="text-gray-400" /> Hackathon-Advanced</> : 
              message.model === 'Pro' ? <><BrainCircuit size={12} className="text-gray-400" /> Hackathon-Pro</> : 
@@ -186,12 +214,33 @@ export function MessageBubble({ message, onDelete, onRegenerate, showReasoningDe
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
+              onMouseLeave={() => setShowReactionsList(false)}
               className={cn(
                 "absolute -bottom-10 flex items-center gap-1 bg-white dark:bg-[#1e1e24] border border-gray-200 dark:border-[#2a2a35] rounded-full p-1 shadow-sm z-10 transition-colors duration-300",
                 isUser ? "right-4" : "left-0"
               )}
             >
-              <button onClick={handleCopy} className="p-1.5 hover:bg-gray-100 dark:hover:bg-[#2a2a35] rounded-full text-gray-500 dark:text-gray-400 transition-colors">
+              <AnimatePresence>
+                {showReactionsList && (
+                  <motion.div 
+                    initial={{ opacity: 0, width: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, width: 'auto', scale: 1 }}
+                    exit={{ opacity: 0, width: 0, scale: 0.9 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center gap-1 mr-1 pr-2 border-r border-gray-200 dark:border-[#2a2a35] overflow-hidden"
+                  >
+                    {availableReactions.map(emoji => (
+                      <button key={emoji} onClick={() => handleReact(emoji)} className="p-1 hover:bg-gray-100 dark:hover:bg-[#2a2a35] rounded-full text-sm transition-colors shrink-0">
+                        {emoji}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <button onClick={() => setShowReactionsList(!showReactionsList)} title="React" className="p-1.5 hover:bg-gray-100 dark:hover:bg-[#2a2a35] rounded-full text-gray-500 dark:text-gray-400 transition-colors">
+                <Smile size={16} />
+              </button>
+              <button onClick={handleCopy} title="Copy to Clipboard" className="p-1.5 hover:bg-gray-100 dark:hover:bg-[#2a2a35] rounded-full text-gray-500 dark:text-gray-400 transition-colors">
                 <Copy size={16} />
               </button>
               {!isUser && onRegenerate && (
