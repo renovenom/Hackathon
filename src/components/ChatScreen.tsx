@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Message, ModelType } from "@/types";
 import { MessageBubble } from "./MessageBubble";
-import { Menu, MessageSquarePlus, Zap, Diamond, Brain, Globe, PlusCircle, ArrowUp, Mic, Feather, Eye, EyeOff, Download, Eraser, Bold, Italic, Code, ChevronDown } from "lucide-react";
+import { Menu, MessageSquarePlus, Zap, Diamond, Brain, Globe, PlusCircle, ArrowUp, Mic, Feather, Eye, EyeOff, Download, Eraser, Bold, Italic, Code, ChevronDown, BrainCircuit } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
@@ -227,11 +227,20 @@ export function ChatScreen({
           </button>
           <button 
             onClick={() => setIsModelSelectorOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/50 dark:bg-[#1e1e24] border border-blue-100 dark:border-[#2a2a35] text-xs font-semibold text-blue-700 dark:text-blue-300 shadow-sm"
+            className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-[#1e1e24] border border-gray-200 dark:border-[#2a2a35] text-xs font-bold text-gray-800 dark:text-gray-200 shadow-sm hover:border-gray-300 dark:hover:border-gray-600 transition-all"
+            title="Choose AI Model"
           >
-            {currentModel === 'R1' || currentModel === 'Pro' ? <Zap size={14} className="text-blue-500" /> : <Feather size={14} className="text-sky-500" />}
-            Hackathon-{currentModel === 'R1' ? 'Advanced' : currentModel === 'Pro' ? 'Pro' : currentModel === 'Lite' ? 'Lite' : currentModel === 'Flash8B' ? 'Flash-8B' : 'Flash'}
-            <ChevronDown size={14} className="opacity-50 ml-0.5" />
+            <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+              {currentModel === 'R1' || currentModel === 'Pro' ? <BrainCircuit size={12} /> : <Zap size={12} />}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span>Hackathon-{currentModel === 'R1' ? 'Advanced' : currentModel === 'Pro' ? 'Pro' : currentModel === 'Lite' ? 'Lite' : currentModel === 'Flash8B' ? 'Flash-8B' : 'Flash'}</span>
+              <span className="relative flex h-2 w-2 ml-0.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+            </div>
+            <ChevronDown size={14} className="opacity-40 ml-1 group-hover:opacity-70 transition-opacity" />
           </button>
         </div>
         <div className="flex items-center gap-1">

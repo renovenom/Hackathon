@@ -4,11 +4,11 @@ This is the Hackathon Applet, a web application providing a conversational AI in
 
 ## AI Models
 You can configure and chat with several Hackathon models including:
-- **Hackathon-Flash**
-- **Hackathon-Advanced**
-- **Hackathon-Lite**
-- **Hackathon-Pro**
-- **Hackathon-Flash-8B**
+- **Hackathon-Flash**: Fast, versatile model for everyday tasks. Best default choice for 90% of user queries.
+- **Hackathon-Advanced**: Deep reasoning model that visualizes its thought process.
+- **Hackathon-Lite**: Ultra low-latency model optimized for instant responses.
+- **Hackathon-Pro**: Highest capability for tackling complex, multi-step problems.
+- **Hackathon-Flash-8B**: Efficient model ideal for repetitive, high-volume tasks.
 
 ## Key Features
 - **Responsive Chat Interface**: Built with React and Tailwind CSS for mobile and desktop support.

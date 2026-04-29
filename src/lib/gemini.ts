@@ -17,7 +17,7 @@ export async function* generateChatResponse(
   } else if (modelType === "Lite") {
     modelName = "gemini-3.1-flash-lite-preview";
   } else if (modelType === "Flash8B") {
-    modelName = "gemini-3-flash-8b-preview";
+    modelName = "gemini-3.1-flash-lite-preview"; // 8b is deprecated
   }
 
   // Use process.env for the real key inside AI Studio
@@ -34,18 +34,22 @@ export async function* generateChatResponse(
   }));
 
   try {
+    const config: any = {
+      tools: useSearch ? [{ googleSearch: {} }] : undefined,
+      systemInstruction: modelType === "R1" 
+        ? "You are an elite hacking, cybersecurity, and coding assistant named Hackathon. Your primary goal is to help users learn hacking, write code, debug systems, and understand cybersecurity concepts. Always provide secure, educational, and highly technical responses. For any factual, coding, or analytical queries, analyze step-by-step. You MUST wrap your detailed internal chain-of-thought reasoning and intermediate steps inside <reasoning>...</reasoning> XML tags before giving the final answer."
+        : "You are an elite hacking, cybersecurity, and coding assistant named Hackathon. Your primary goal is to help users learn hacking, write code, debug systems, and understand cybersecurity concepts. Always provide secure, educational, and highly technical responses. For any factual, coding, or analytical queries, analyze step-by-step and provide the most accurate possible answer."
+    };
+
+    if (modelType !== "R1") {
+      if (temperature !== undefined) config.temperature = temperature;
+      if (topP !== undefined) config.topP = topP;
+    }
+
     const responseStream = await ai.models.generateContentStream({
       model: modelName,
       contents: formattedMessages,
-      config: {
-        tools: useSearch ? [{ googleSearch: {} }] : undefined,
-        systemInstruction: modelType === "R1" 
-          ? "You are an elite hacking, cybersecurity, and coding assistant named Hackathon. Your primary goal is to help users learn hacking, write code, debug systems, and understand cybersecurity concepts. Always provide secure, educational, and highly technical responses. For any factual, coding, or analytical queries, analyze step-by-step. You MUST wrap your detailed internal chain-of-thought reasoning and intermediate steps inside <reasoning>...</reasoning> XML tags before giving the final answer."
-          : "You are an elite hacking, cybersecurity, and coding assistant named Hackathon. Your primary goal is to help users learn hacking, write code, debug systems, and understand cybersecurity concepts. Always provide secure, educational, and highly technical responses. For any factual, coding, or analytical queries, analyze step-by-step and provide the most accurate possible answer.",
-        temperature: modelType === "R1" ? undefined : temperature,
-        topP: modelType === "R1" ? undefined : topP,
-        maxOutputTokens: maxOutputTokens,
-      }
+      config: config
     });
 
     for await (const chunk of responseStream) {
@@ -55,9 +59,27 @@ export async function* generateChatResponse(
       }
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini API Error:", error);
-    throw error;
+    
+    let errorMessage = "An unexpected error occurred while communicating with the AI.";
+    const errString = error?.message || String(error);
+
+    if (errString.includes("404") || errString.includes("NOT_FOUND")) {
+      errorMessage = "The requested AI model was not found. It may be temporarily unavailable or deprecated.";
+    } else if (errString.includes("403") || errString.includes("PERMISSION_DENIED")) {
+      errorMessage = "API key lacks sufficient permissions. Please verify your API key access scopes.";
+    } else if (errString.includes("400") || errString.includes("INVALID_ARGUMENT") || errString.includes("API key not valid")) {
+      errorMessage = "Invalid API key provided. Please check your AI model settings.";
+    } else if (errString.includes("429") || errString.includes("quota") || errString.includes("RESOURCE_EXHAUSTED")) {
+      errorMessage = "API quota exceeded. Please try again later or check your billing plan.";
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (error?.status) {
+      errorMessage = `API Error (${error.status}): ${error.message}`;
+    }
+
+    throw new Error(errorMessage);
   }
 }
 

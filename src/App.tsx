@@ -295,14 +295,7 @@ export default function App() {
 
     } catch (error) {
       console.error("Failed to generate response:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const friendlyError = errorMessage.includes("API_KEY") 
-        ? "My settings are missing a valid API key! Please check your configuration."
-        : errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("RESOURCE_EXHAUSTED")
-        ? "You've exceeded your API quota or rate limit. Please check your billing details or try again later."
-        : errorMessage.includes("fetch") || errorMessage.includes("network")
-        ? "I'm having trouble connecting to the network right now. Are you offline?"
-        : `Sorry, I encountered an error: ${errorMessage}`;
+      const friendlyError = error instanceof Error ? error.message : String(error);
 
       toast.error(friendlyError);
 
@@ -310,7 +303,7 @@ export default function App() {
         ...updatedChat,
         messages: updatedChat.messages.map(m => 
           m.id === assistantMessageId 
-            ? { ...m, content: `**Error:** ${friendlyError} \n\n*Please try again later.*` } 
+            ? { ...m, content: `**Error:** ${friendlyError} \n\n*Please try again later or check your settings.*` } 
             : m
         )
       };

@@ -89,8 +89,9 @@ const UpdateChecker = () => {
       )}
 
       {status === "updating" && (
-        <div className="py-4 w-full">
-          <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2.5 mb-4 overflow-hidden">
+        <div className="py-8 w-full flex flex-col items-center justify-center">
+          <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin mb-6" />
+          <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2.5 mb-4 overflow-hidden shadow-inner">
             <motion.div 
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
@@ -98,7 +99,8 @@ const UpdateChecker = () => {
               className="bg-blue-600 h-2.5 rounded-full"
             />
           </div>
-          <p className="text-gray-600 dark:text-gray-300">Downloading UI payload...</p>
+          <p className="text-gray-700 dark:text-gray-300 font-medium">Downloading UI payload & updates...</p>
+          <p className="text-gray-500 text-xs mt-2">Please do not close this window</p>
         </div>
       )}
 
