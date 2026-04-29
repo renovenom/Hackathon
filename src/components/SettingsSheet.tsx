@@ -146,14 +146,14 @@ const ModelPreferencesEditor = ({ settings, onUpdateSettings }: { settings: AppS
 
   return (
     <div className="flex flex-col gap-4 pb-2">
-      <div className="flex gap-2 p-1 bg-gray-100 dark:bg-[#1a1a20] rounded-xl">
-        {(["V3", "R1", "Lite"] as const).map(m => (
+      <div className="flex gap-2 p-1 bg-gray-100 dark:bg-[#1a1a20] rounded-xl flex-wrap">
+        {(["V3", "R1", "Lite", "Pro", "Flash8B"] as const).map(m => (
           <button
             key={m}
-            className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${selectedModel === m ? "bg-white dark:bg-[#2a2a35] text-blue-600 dark:text-blue-400 shadow-sm" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
+            className={`flex-auto py-1.5 px-2 text-[10px] sm:text-xs font-medium rounded-lg transition-colors ${selectedModel === m ? "bg-white dark:bg-[#2a2a35] text-blue-600 dark:text-blue-400 shadow-sm" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
             onClick={() => setSelectedModel(m)}
           >
-            {m === "V3" ? "Flash" : m === "R1" ? "Advanced" : "Lite"}
+            {m === "V3" ? "Flash" : m === "R1" ? "Advanced" : m === "Pro" ? "Pro" : m === "Flash8B" ? "Flash-8B" : "Lite"}
           </button>
         ))}
       </div>
@@ -314,6 +314,7 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings, onL
   const t = useTranslation(settings.language);
   const { user, logout } = useAuth();
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const [confirmWipe, setConfirmWipe] = useState(false);
 
   const cycleLanguage = () => {
     const langs = ["English", "Spanish", "French", "German", "Chinese"];
@@ -348,20 +349,18 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings, onL
   };
 
   const handleWipeData = async () => {
-    if (window.confirm(t("Are you sure you want to delete all your local data and log out? This action cannot be undone."))) {
-      // Clear local storage
-      localStorage.removeItem('gemini_clone_settings');
-      localStorage.removeItem('gemini_clone_local_chats');
-      localStorage.removeItem('gemini_clone_local_user');
-      localStorage.removeItem('gemini_clone_local_accounts');
-      
-      if (user) {
-        localStorage.removeItem(`gemini_clone_chats_${user.uid}`);
-        await logout();
-      }
-      
-      window.location.reload();
+    // Clear local storage
+    localStorage.removeItem('gemini_clone_settings');
+    localStorage.removeItem('gemini_clone_local_chats');
+    localStorage.removeItem('gemini_clone_local_user');
+    localStorage.removeItem('gemini_clone_local_accounts');
+    
+    if (user) {
+      localStorage.removeItem(`gemini_clone_chats_${user.uid}`);
+      await logout();
     }
+    
+    window.location.reload();
   };
 
   return (
@@ -523,12 +522,35 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings, onL
                     <>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t("Data controls")}</h3>
                       <p className="text-gray-600 dark:text-gray-300 mb-4">{t("Manage your data and privacy settings here.")}</p>
-                      <button 
-                        onClick={handleWipeData}
-                        className="w-full py-2.5 bg-red-100 hover:bg-red-200 dark:bg-red-600/10 dark:hover:bg-red-600/20 text-red-600 dark:text-red-500 font-medium rounded-xl transition-colors"
-                      >
-                        {t("Delete all my data")}
-                      </button>
+                      
+                      {!confirmWipe ? (
+                        <button 
+                          onClick={() => setConfirmWipe(true)}
+                          className="w-full py-2.5 bg-red-100 hover:bg-red-200 dark:bg-red-600/10 dark:hover:bg-red-600/20 text-red-600 dark:text-red-500 font-medium rounded-xl transition-colors"
+                        >
+                          {t("Delete all my data")}
+                        </button>
+                      ) : (
+                        <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl border border-red-200 dark:border-red-900/30">
+                          <p className="text-sm text-red-800 dark:text-red-400 font-medium mb-3">
+                            {t("Are you sure you want to delete all your local data and log out? This action cannot be undone.")}
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={handleWipeData}
+                              className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors text-sm"
+                            >
+                              {t("Yes, delete it")}
+                            </button>
+                            <button 
+                              onClick={() => setConfirmWipe(false)}
+                              className="flex-1 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-colors text-sm"
+                            >
+                              {t("Cancel")}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </>
                   )}
                 </motion.div>

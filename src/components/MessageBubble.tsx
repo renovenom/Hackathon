@@ -4,7 +4,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import { Message } from "@/types";
-import { ChevronDown, ChevronRight, Copy, RefreshCw, Trash2, BrainCircuit, Terminal } from "lucide-react";
+import { ChevronDown, ChevronRight, Copy, RefreshCw, Trash2, BrainCircuit, Terminal, Zap, Feather, Check } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface MessageBubbleProps {
@@ -167,6 +167,15 @@ export function MessageBubble({ message, onDelete, onRegenerate, showReasoningDe
         )}>
           <ReactMarkdown components={MarkdownComponents}>{content}</ReactMarkdown>
         </div>
+
+        {!isUser && message.model && (
+          <div className="flex items-center gap-1.5 mt-3 text-[11px] font-medium text-gray-400 dark:text-gray-500 select-none">
+            {message.model === 'V3' ? <><Feather size={12} className="text-gray-400" /> Hackathon-Flash</> : 
+             message.model === 'R1' ? <><Zap size={12} className="text-gray-400" /> Hackathon-Advanced</> : 
+             message.model === 'Pro' ? <><BrainCircuit size={12} className="text-gray-400" /> Hackathon-Pro</> : 
+             message.model === 'Flash8B' ? <><Check size={12} className="text-gray-400" /> Hackathon-Flash-8B</> : <><Feather size={12} className="text-gray-400" /> Hackathon-Lite</>}
+          </div>
+        )}
 
         </div>
 

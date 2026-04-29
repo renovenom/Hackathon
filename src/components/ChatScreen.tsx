@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Message, ModelType } from "@/types";
 import { MessageBubble } from "./MessageBubble";
-import { Menu, MessageSquarePlus, Zap, Diamond, Brain, Globe, PlusCircle, ArrowUp, Mic, Feather, Eye, EyeOff, Download, Eraser, Bold, Italic, Code } from "lucide-react";
+import { Menu, MessageSquarePlus, Zap, Diamond, Brain, Globe, PlusCircle, ArrowUp, Mic, Feather, Eye, EyeOff, Download, Eraser, Bold, Italic, Code, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
@@ -58,7 +58,9 @@ export function ChatScreen({
       const names: Record<string, string> = {
         V3: "Hackathon-Flash",
         R1: "Hackathon-Advanced",
-        Lite: "Hackathon-Lite"
+        Lite: "Hackathon-Lite",
+        Pro: "Hackathon-Pro",
+        Flash8B: "Hackathon-Flash-8B"
       };
       
       setModelSwitchCue({ visible: true, name: names[currentModel] || "Hackathon" });
@@ -223,15 +225,14 @@ export function ChatScreen({
           <button onClick={onOpenSidebar} className="p-2 -ml-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1e1e24] shadow-sm rounded-full transition-colors">
             <Menu size={24} strokeWidth={1.5} />
           </button>
-          {(currentModel === 'R1' || currentModel === 'Lite') && (
-            <button 
-              onClick={() => setIsModelSelectorOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/50 dark:bg-[#1e1e24] border border-blue-100 dark:border-[#2a2a35] text-xs font-semibold text-blue-700 dark:text-blue-300 shadow-sm"
-            >
-              {currentModel === 'R1' ? <Zap size={14} className="text-blue-500" /> : <Feather size={14} className="text-sky-500" />}
-              Hackathon-{currentModel === 'R1' ? 'Advanced' : 'Flash'}
-            </button>
-          )}
+          <button 
+            onClick={() => setIsModelSelectorOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/50 dark:bg-[#1e1e24] border border-blue-100 dark:border-[#2a2a35] text-xs font-semibold text-blue-700 dark:text-blue-300 shadow-sm"
+          >
+            {currentModel === 'R1' || currentModel === 'Pro' ? <Zap size={14} className="text-blue-500" /> : <Feather size={14} className="text-sky-500" />}
+            Hackathon-{currentModel === 'R1' ? 'Advanced' : currentModel === 'Pro' ? 'Pro' : currentModel === 'Lite' ? 'Lite' : currentModel === 'Flash8B' ? 'Flash-8B' : 'Flash'}
+            <ChevronDown size={14} className="opacity-50 ml-0.5" />
+          </button>
         </div>
         <div className="flex items-center gap-1">
           {messages.length > 0 && (
@@ -256,34 +257,34 @@ export function ChatScreen({
           <div className="h-full flex flex-col items-center justify-center -mt-10 px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center w-full max-w-2xl mx-auto">
               <h1 className="text-5xl md:text-6xl font-medium tracking-tight mb-2 gemini-gradient">
-                {t("Hello, there")}
+                {t("Access Granted")}
               </h1>
               <h2 className="text-3xl md:text-4xl font-medium text-gray-400 dark:text-[#5f6368] mb-12">
-                {t("How can I help you today?")}
+                {t("Ready to hack, code, or build something awesome?")}
               </h2>
               
               {/* Suggestion Chips */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
                 <button 
-                  onClick={() => onSendMessage("What's the weather like?", undefined, false)}
+                  onClick={() => onSendMessage("Explain how SQL Injection works and how to prevent it in a Node.js app.", undefined, false)}
                   className="flex flex-col text-left gap-2 p-4 rounded-2xl bg-[#F0F4F9] dark:bg-[#1e1e24] hover:bg-[#e8edf2] dark:hover:bg-[#2a2a35] transition-colors border border-transparent"
                 >
                   <Globe className="text-sky-500" size={24} />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Check weather</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Explain SQL Injection</span>
                 </button>
                 <button 
-                  onClick={() => onSendMessage("Help me write an email...", undefined, false)}
+                  onClick={() => onSendMessage("Write a simple Python port scanner that scans the top 1000 common ports on a given IP.", undefined, false)}
                   className="flex flex-col text-left gap-2 p-4 rounded-2xl bg-[#F0F4F9] dark:bg-[#1e1e24] hover:bg-[#e8edf2] dark:hover:bg-[#2a2a35] transition-colors border border-transparent"
                 >
-                  <Feather className="text-blue-500" size={24} />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Draft an email</span>
+                  <Code className="text-blue-500" size={24} />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Write a port scanner</span>
                 </button>
                 <button 
-                  onClick={() => onSendMessage("Explain quantum computing to a 5 year old", undefined, false)}
+                  onClick={() => onSendMessage("What are the best practices for securing a React application against XSS?", undefined, false)}
                   className="flex flex-col text-left gap-2 p-4 rounded-2xl bg-[#F0F4F9] dark:bg-[#1e1e24] hover:bg-[#e8edf2] dark:hover:bg-[#2a2a35] transition-colors border border-transparent md:col-span-1"
                 >
                   <Brain className="text-purple-500" size={24} />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Explain a concept</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Secure a React app</span>
                 </button>
               </div>
             </motion.div>

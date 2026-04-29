@@ -1,6 +1,6 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
-export type ModelType = "V3" | "R1" | "Lite";
+export type ModelType = "V3" | "R1" | "Lite" | "Pro" | "Flash8B";
 
 export async function* generateChatResponse(
   messages: { role: "user" | "model"; parts: { text: string }[] }[],
@@ -12,10 +12,12 @@ export async function* generateChatResponse(
 ) {
   let modelName = "gemini-3-flash-preview";
 
-  if (modelType === "R1") {
+  if (modelType === "R1" || modelType === "Pro") {
     modelName = "gemini-3.1-pro-preview";
   } else if (modelType === "Lite") {
     modelName = "gemini-3.1-flash-lite-preview";
+  } else if (modelType === "Flash8B") {
+    modelName = "gemini-3-flash-8b-preview";
   }
 
   // Use process.env for the real key inside AI Studio
@@ -38,10 +40,11 @@ export async function* generateChatResponse(
       config: {
         tools: useSearch ? [{ googleSearch: {} }] : undefined,
         systemInstruction: modelType === "R1" 
-          ? "You are an extremely accurate, helpful, and logical AI assistant. For any factual, coding, or analytical queries, analyze step-by-step. You MUST wrap your detailed internal chain-of-thought reasoning and intermediate steps inside <reasoning>...</reasoning> XML tags before giving the final answer."
-          : "You are an extremely accurate, helpful, and logical AI assistant. For any factual, coding, or analytical queries, analyze step-by-step and provide the most accurate possible answer.",
+          ? "You are an elite hacking, cybersecurity, and coding assistant named Hackathon. Your primary goal is to help users learn hacking, write code, debug systems, and understand cybersecurity concepts. Always provide secure, educational, and highly technical responses. For any factual, coding, or analytical queries, analyze step-by-step. You MUST wrap your detailed internal chain-of-thought reasoning and intermediate steps inside <reasoning>...</reasoning> XML tags before giving the final answer."
+          : "You are an elite hacking, cybersecurity, and coding assistant named Hackathon. Your primary goal is to help users learn hacking, write code, debug systems, and understand cybersecurity concepts. Always provide secure, educational, and highly technical responses. For any factual, coding, or analytical queries, analyze step-by-step and provide the most accurate possible answer.",
         temperature: modelType === "R1" ? undefined : temperature,
         topP: modelType === "R1" ? undefined : topP,
+        maxOutputTokens: maxOutputTokens,
       }
     });
 

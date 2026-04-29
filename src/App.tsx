@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChatScreen } from './components/ChatScreen';
 import { Sidebar } from './components/Sidebar';
 import { SettingsSheet } from './components/SettingsSheet';
+import { PricingModal } from './components/PricingModal';
+import { ProfileModal } from './components/ProfileModal';
 import { LoginScreen } from './components/LoginScreen';
 import { ChatSession, Message, AppSettings, DEFAULT_SETTINGS } from './types';
 import { generateChatResponse, ModelType } from './lib/gemini';
@@ -34,6 +36,8 @@ export default function App() {
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [reusedPrompt, setReusedPrompt] = useState<string>("");
@@ -239,7 +243,8 @@ export default function App() {
         id: assistantMessageId,
         role: "model",
         content: "",
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        model: modelToUse
       };
       
       updatedChat = {
@@ -293,6 +298,8 @@ export default function App() {
       const errorMessage = error instanceof Error ? error.message : String(error);
       const friendlyError = errorMessage.includes("API_KEY") 
         ? "My settings are missing a valid API key! Please check your configuration."
+        : errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("RESOURCE_EXHAUSTED")
+        ? "You've exceeded your API quota or rate limit. Please check your billing details or try again later."
         : errorMessage.includes("fetch") || errorMessage.includes("network")
         ? "I'm having trouble connecting to the network right now. Are you offline?"
         : `Sorry, I encountered an error: ${errorMessage}`;
@@ -348,9 +355,13 @@ export default function App() {
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenPricing={() => setIsPricingOpen(true)}
+        onOpenProfile={() => setIsProfileModalOpen(true)}
         onLoginClick={() => setShowLogin(true)}
         language={settings.language}
         onReusePrompt={setReusedPrompt}
+        defaultModel={settings.defaultModel}
+        onSelectDefaultModel={(model) => setSettings(prev => ({ ...prev, defaultModel: model }))}
       />
       
       <main className="flex-1 min-w-0 h-full relative">
@@ -382,6 +393,18 @@ export default function App() {
           setIsSettingsOpen(false);
           setShowLogin(true);
         }}
+      />
+
+      <PricingModal 
+        isOpen={isPricingOpen}
+        onClose={() => setIsPricingOpen(false)}
+        language={settings.language}
+      />
+
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        language={settings.language}
       />
     </div>
   );

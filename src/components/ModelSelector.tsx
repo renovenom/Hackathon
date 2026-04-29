@@ -39,6 +39,24 @@ export function ModelSelector({ isOpen, onClose, currentModel, onSelectModel }: 
       useCases: "Quick questions, translations, summaries, rapid rapid-fire texting.",
       icon: <Zap size={20} className="text-sky-500" />,
       badge: "Fast"
+    },
+    {
+      id: "Pro",
+      name: "Hackathon-Pro",
+      description: "The most capable model for highly complex tasks. Deep reasoning, math, and code.",
+      strengths: ["Intelligent multi-step reasoning", "Advanced instructions", "High reliability"],
+      useCases: "Advanced coding, complex logic puzzles, extensive creative generation.",
+      icon: <BrainCircuit size={20} className="text-indigo-500" />,
+      badge: "Capable"
+    },
+    {
+      id: "Flash8B",
+      name: "Hackathon-Flash-8B",
+      description: "High volume cost-effective model for mass deployment.",
+      strengths: ["Ultra low cost", "High rate limits", "Good standard logic"],
+      useCases: "Classification, sentiment analysis, basic extraction.",
+      icon: <Check size={20} className="text-green-500" />,
+      badge: "Efficient"
     }
   ];
 

@@ -7,6 +7,7 @@ export interface Message {
   role: "user" | "model";
   content: string;
   timestamp: number;
+  model?: ModelType;
 }
 
 export interface ChatSession {
@@ -50,6 +51,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
     V3: { temperature: 0.7, topP: 0.95, maxTokens: 4096 },
     R1: { temperature: 0.7, topP: 0.95, maxTokens: 8192 },
     Lite: { temperature: 0.7, topP: 0.95, maxTokens: 2048 },
+    Pro: { temperature: 0.7, topP: 0.95, maxTokens: 8192 },
+    Flash8B: { temperature: 0.7, topP: 0.95, maxTokens: 4096 },
   },
   showReasoningDefault: true,
   hapticFeedback: true,

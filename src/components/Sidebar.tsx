@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { ChatSession } from "@/types";
-import { Plus, MessageSquare, Settings, X, Trash2, History, LogIn, LogOut, Search } from "lucide-react";
+import { ChatSession, ModelType } from "@/types";
+import { Plus, MessageSquare, Settings, X, Trash2, History, LogIn, LogOut, Search, BadgeDollarSign, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
 import { useAuth } from "@/lib/AuthContext";
@@ -15,12 +15,16 @@ interface SidebarProps {
   onNewChat: () => void;
   onDeleteChat: (id: string) => void;
   onOpenSettings: () => void;
+  onOpenPricing: () => void;
+  onOpenProfile: () => void;
   onLoginClick: () => void;
   language: string;
   onReusePrompt: (prompt: string) => void;
+  defaultModel: ModelType;
+  onSelectDefaultModel: (model: ModelType) => void;
 }
 
-export function Sidebar({ isOpen, onClose, chats, currentChat, currentChatId, onSelectChat, onNewChat, onDeleteChat, onOpenSettings, onLoginClick, language, onReusePrompt }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, chats, currentChat, currentChatId, onSelectChat, onNewChat, onDeleteChat, onOpenSettings, onOpenPricing, onOpenProfile, onLoginClick, language, onReusePrompt, defaultModel, onSelectDefaultModel }: SidebarProps) {
   const t = useTranslation(language);
   const { user, logout } = useAuth();
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
@@ -147,6 +151,29 @@ export function Sidebar({ isOpen, onClose, chats, currentChat, currentChatId, on
         </div>
 
         <div className="p-4 flex flex-col gap-1">
+          <div className="mb-3">
+            <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 px-2">
+              {t("Default Model")}
+            </div>
+            <div className="relative px-2">
+              <select
+                value={defaultModel}
+                onChange={(e) => onSelectDefaultModel(e.target.value as ModelType)}
+                className="w-full appearance-none bg-white dark:bg-[#1e1e24] border border-gray-100 dark:border-[#2a2a35] text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl py-2 pl-3 pr-8 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="Pro">Hackathon-Pro</option>
+                <option value="R1">Hackathon-Advanced</option>
+                <option value="V3">Hackathon-Flash</option>
+                <option value="Flash8B">Hackathon-Flash-8B</option>
+                <option value="Lite">Hackathon-Lite</option>
+              </select>
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                 <ChevronDown size={16} />
+              </div>
+            </div>
+          </div>
+          <div className="h-px bg-gray-100 dark:bg-white/5 mx-2 my-1"></div>
+          
           {!user ? (
             <button 
               onClick={() => { onLoginClick(); onClose(); }}
@@ -156,21 +183,39 @@ export function Sidebar({ isOpen, onClose, chats, currentChat, currentChatId, on
               <span className="font-medium">{t("Log In / Sync")}</span>
             </button>
           ) : (
-            <button 
-              onClick={() => { logout(); onClose(); }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-left text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-sm"
-            >
-              {'photoURL' in user && user.photoURL ? (
-                <img src={user.photoURL} alt="Avatar" className="w-6 h-6 rounded-full object-cover shrink-0" />
-              ) : (
+            <>
+              <button 
+                onClick={() => { onOpenProfile(); onClose(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-left text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-sm"
+              >
+                {'photoURL' in user && user.photoURL ? (
+                  <img src={user.photoURL} alt="Avatar" className="w-6 h-6 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">
+                    {user && 'displayName' in user && user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="flex flex-col overflow-hidden">
+                  <span className="font-medium">{user && 'displayName' in user && user.displayName ? user.displayName : t("Edit Profile")}</span>
+                  <span className="text-[10px] text-gray-500 truncate">{user.email}</span>
+                </div>
+              </button>
+              <button 
+                onClick={() => { logout(); onClose(); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-left text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-sm"
+              >
                 <LogOut size={18} />
-              )}
-              <div className="flex flex-col overflow-hidden">
-                <span className="font-medium">{user && 'displayName' in user && user.displayName ? user.displayName : t("Log Out")}</span>
-                <span className="text-[10px] text-gray-500 truncate">{user.email}</span>
-              </div>
-            </button>
+                <span className="font-medium">{t("Log Out")}</span>
+              </button>
+            </>
           )}
+          <button 
+            onClick={() => { onOpenPricing(); onClose(); }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-left text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-sm"
+          >
+            <BadgeDollarSign size={18} />
+            <span className="font-medium">{t("Pricing")}</span>
+          </button>
           <button 
             onClick={() => { onOpenSettings(); onClose(); }}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-full text-left text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-sm"
