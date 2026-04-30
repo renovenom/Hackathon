@@ -13,7 +13,7 @@ export async function* generateChatResponse(
   let modelName = "gemini-3-flash-preview";
 
   if (modelType === "R1" || modelType === "Pro") {
-    modelName = "gemini-3.1-pro-preview";
+    modelName = "gemini-2.5-pro";
   } else if (modelType === "Lite") {
     modelName = "gemini-3.1-flash-lite-preview";
   } else if (modelType === "Flash8B") {
