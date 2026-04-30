@@ -10,18 +10,21 @@ export async function* generateChatResponse(
   maxOutputTokens?: number,
   useSearch?: boolean
 ) {
-  let modelName = "gemini-3-flash-preview";
+  let modelName = "gemini-1.5-flash";
 
   if (modelType === "R1" || modelType === "Pro") {
-    modelName = "gemini-2.5-pro";
+    modelName = "gemini-1.5-pro";
   } else if (modelType === "Lite") {
-    modelName = "gemini-3.1-flash-lite-preview";
+    modelName = "gemini-1.5-flash";
   } else if (modelType === "Flash8B") {
-    modelName = "gemini-3.1-flash-lite-preview"; // 8b is deprecated
+    modelName = "gemini-1.5-flash-8b";
   }
 
   // Use process.env for the real key inside AI Studio
-  const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY;
+  let apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    apiKey = (import.meta as any).env?.VITE_GEMINI_API_KEY;
+  }
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is missing. Please set it in your environment.");
   }
@@ -68,7 +71,7 @@ export async function* generateChatResponse(
     const errString = error?.message || String(error);
     const isRecoverable = errString.includes("429") || errString.includes("quota") || errString.includes("RESOURCE_EXHAUSTED") || errString.includes("404") || errString.includes("NOT_FOUND");
     
-    if (isRecoverable && yieldedElements === 0 && modelName !== "gemini-2.5-flash") {
+    if (isRecoverable && yieldedElements === 0 && modelName !== "gemini-1.5-flash") {
       performFallback = true;
     } else {
       console.error("Gemini API Error:", error);
@@ -94,11 +97,11 @@ export async function* generateChatResponse(
   }
 
   if (performFallback) {
-    console.warn(`Original model ${modelName} failed. Falling back to gemini-2.5-flash`);
+    console.warn(`Original model ${modelName} failed. Falling back to gemini-1.5-flash`);
     
     try {
       const fallbackStream = await ai.models.generateContentStream({
-        model: "gemini-2.5-flash",
+        model: "gemini-1.5-flash",
         contents: formattedMessages,
         config: config
       });
