@@ -33,8 +33,12 @@ export async function* generateChatResponse(
     parts: m.parts,
   }));
 
+  let yieldedElements = 0;
+  let performFallback = false;
+  let config: any;
+
   try {
-    const config: any = {
+    config = {
       tools: useSearch ? [{ googleSearch: {} }] : undefined,
       systemInstruction: modelType === "R1" 
         ? "You are an elite hacking, cybersecurity, and coding assistant named Hackathon. Your primary goal is to help users learn hacking, write code, debug systems, and understand cybersecurity concepts. Always provide secure, educational, and highly technical responses. For any factual, coding, or analytical queries, analyze step-by-step. You MUST wrap your detailed internal chain-of-thought reasoning and intermediate steps inside <reasoning>...</reasoning> XML tags before giving the final answer."
@@ -56,30 +60,68 @@ export async function* generateChatResponse(
       const c = chunk as GenerateContentResponse;
       if (c.text) {
         yield { text: c.text };
+        yieldedElements++;
       }
     }
 
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
-    
-    let errorMessage = "An unexpected error occurred while communicating with the AI.";
     const errString = error?.message || String(error);
+    const isRecoverable = errString.includes("429") || errString.includes("quota") || errString.includes("RESOURCE_EXHAUSTED") || errString.includes("404") || errString.includes("NOT_FOUND");
+    
+    if (isRecoverable && yieldedElements === 0 && modelName !== "gemini-2.5-flash") {
+      performFallback = true;
+    } else {
+      console.error("Gemini API Error:", error);
+      
+      let errorMessage = "An unexpected error occurred while communicating with the AI.";
 
-    if (errString.includes("404") || errString.includes("NOT_FOUND")) {
-      errorMessage = "The requested AI model was not found. It may be temporarily unavailable or deprecated.";
-    } else if (errString.includes("403") || errString.includes("PERMISSION_DENIED")) {
-      errorMessage = "API key lacks sufficient permissions. Please verify your API key access scopes.";
-    } else if (errString.includes("400") || errString.includes("INVALID_ARGUMENT") || errString.includes("API key not valid")) {
-      errorMessage = "Invalid API key provided. Please check your AI model settings.";
-    } else if (errString.includes("429") || errString.includes("quota") || errString.includes("RESOURCE_EXHAUSTED")) {
-      errorMessage = "API quota exceeded. Please try again later or check your billing plan.";
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-    } else if (error?.status) {
-      errorMessage = `API Error (${error.status}): ${error.message}`;
+      if (errString.includes("404") || errString.includes("NOT_FOUND")) {
+        errorMessage = "The requested AI model was not found. It may be temporarily unavailable or deprecated.";
+      } else if (errString.includes("403") || errString.includes("PERMISSION_DENIED")) {
+        errorMessage = "API key lacks sufficient permissions. Please verify your API key access scopes.";
+      } else if (errString.includes("400") || errString.includes("INVALID_ARGUMENT") || errString.includes("API key not valid")) {
+        errorMessage = "Invalid API key provided. Please check your AI model settings.";
+      } else if (errString.includes("429") || errString.includes("quota") || errString.includes("RESOURCE_EXHAUSTED")) {
+        errorMessage = "API quota exceeded. Please try again later or check your billing plan.";
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (error?.status) {
+        errorMessage = `API Error (${error.status}): ${error.message}`;
+      }
+
+      throw new Error(errorMessage);
     }
+  }
 
-    throw new Error(errorMessage);
+  if (performFallback) {
+    console.warn(`Original model ${modelName} failed. Falling back to gemini-2.5-flash`);
+    
+    try {
+      const fallbackStream = await ai.models.generateContentStream({
+        model: "gemini-2.5-flash",
+        contents: formattedMessages,
+        config: config
+      });
+
+      for await (const chunk of fallbackStream) {
+        const c = chunk as GenerateContentResponse;
+        if (c.text) {
+          yield { text: c.text };
+        }
+      }
+    } catch (fallbackError: any) {
+      console.error("Gemini API Fallback Error:", fallbackError);
+      
+      let errorMessage = "An unexpected error occurred while communicating with the AI fallback model.";
+      const errString = fallbackError?.message || String(fallbackError);
+
+      if (errString.includes("429") || errString.includes("quota") || errString.includes("RESOURCE_EXHAUSTED")) {
+        errorMessage = "API quota exceeded. Please try again later or check your billing plan.";
+      } else if (fallbackError instanceof Error) {
+        errorMessage = fallbackError.message;
+      }
+      throw new Error(errorMessage);
+    }
   }
 }
 
