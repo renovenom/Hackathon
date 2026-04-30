@@ -169,7 +169,7 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleSendMessage = async (text: string, modelOverride?: ModelType, useSearch?: boolean) => {
+  const handleSendMessage = async (text: string, modelOverride?: ModelType, useSearch?: boolean, attachments?: any[]) => {
     let chatId = currentChatId;
     let newChats = [...chats];
     let chatIndex = newChats.findIndex(c => c.id === chatId);
@@ -178,7 +178,8 @@ export default function App() {
       id: Date.now().toString(),
       role: "user",
       content: text,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      attachments
     };
 
     const modelToUse = modelOverride || (chatIndex !== -1 ? newChats[chatIndex].model : settings.defaultModel);
@@ -217,10 +218,21 @@ export default function App() {
     const assistantMessageId = (Date.now() + 1).toString();
 
     try {
-      const messagesForApi = updatedChat.messages.map(m => ({
-        role: m.role,
-        parts: [{ text: m.content }]
-      }));
+      const messagesForApi = updatedChat.messages.map(m => {
+        const parts: any[] = [];
+        if (m.content) parts.push({ text: m.content });
+        if (m.attachments) {
+          m.attachments.forEach(att => {
+            parts.push({
+              inlineData: {
+                data: att.data,
+                mimeType: att.mimeType
+              }
+            });
+          });
+        }
+        return { role: m.role, parts };
+      });
 
       const prefs = settings.modelPreferences?.[modelToUse] || {
         temperature: settings.temperature,

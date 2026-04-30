@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { AppSettings } from "@/types";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight, User as UserIcon, Database, Globe, Moon, Type, Mic, Info, FileText, HelpCircle, LogOut, LogIn, X, Zap, Check, Sliders } from "lucide-react";
+import { ChevronLeft, ChevronRight, User as UserIcon, Database, Globe, Moon, Type, Mic, Info, FileText, HelpCircle, LogOut, LogIn, X, Zap, Check, Sliders, Trophy } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 import { useAuth } from "@/lib/AuthContext";
 import { toast } from "sonner";
@@ -427,6 +427,7 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings, onL
             <div className="mb-6">
               <div className="text-[0.8125rem] font-medium text-gray-500 dark:text-gray-400 mb-2 px-1">{t("About")}</div>
               <div className="bg-white dark:bg-[#1e1e24] rounded-3xl overflow-hidden shadow-sm border border-transparent dark:border-[#2a2a35] transition-colors duration-300">
+                <SettingsItem icon={Trophy} label={t("About Hackathon")} onClick={() => setActiveModal('hackathon')} />
                 <SettingsItem icon={Info} label={t("Check for updates")} onClick={() => setActiveModal('updates')} />
                 <SettingsItem icon={FileText} label={t("Service agreement")} onClick={() => setActiveModal('agreement')} hideBorder />
               </div>
@@ -490,6 +491,18 @@ export function SettingsSheet({ isOpen, onClose, settings, onUpdateSettings, onL
                     <X size={20} />
                   </button>
                   
+                  {activeModal === 'hackathon' && (
+                    <>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Hackathon Project</h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm h-40 overflow-y-auto pr-2">
+                        Welcome to our hackathon project!
+                        <br/><br/>
+                        This platform showcases various AI models in a unified interface. We integrated features like live chat streaming, responsive UI changes, dark mode, model switching, fallback handling, image uploads (Vision API), voice transcription UI, and local authentication simulations. The project aims to demonstrate robust front-end architecture combined with powerful AI backend systems using Gemini AI.
+                        <br/><br/>
+                        Thank you for exploring our build!
+                      </p>
+                    </>
+                  )}
                   {activeModal === 'updates' && (
                     <UpdateChecker />
                   )}

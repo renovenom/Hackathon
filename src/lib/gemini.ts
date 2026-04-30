@@ -3,7 +3,7 @@ import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 export type ModelType = "V3" | "R1" | "Lite" | "Pro" | "Flash8B";
 
 export async function* generateChatResponse(
-  messages: { role: "user" | "model"; parts: { text: string }[] }[],
+  messages: { role: "user" | "model"; parts: any[] }[],
   modelType: ModelType,
   temperature: number = 0.7,
   topP: number = 0.95,

@@ -2,12 +2,19 @@ import { ModelType } from "./lib/gemini";
 
 export type { ModelType };
 
+export interface Attachment {
+  data: string; // base64 string
+  mimeType: string;
+  url?: string; // object URL for preview
+}
+
 export interface Message {
   id: string;
   role: "user" | "model";
   content: string;
   timestamp: number;
   model?: ModelType;
+  attachments?: Attachment[];
 }
 
 export interface ChatSession {

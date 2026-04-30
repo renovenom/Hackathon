@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Message, ModelType } from "@/types";
+import { Message, ModelType, Attachment } from "@/types";
 import { MessageBubble } from "./MessageBubble";
-import { Menu, MessageSquarePlus, Zap, Diamond, Brain, Globe, PlusCircle, ArrowUp, Mic, Feather, Eye, EyeOff, Download, Eraser, Bold, Italic, Code, ChevronDown, BrainCircuit } from "lucide-react";
+import { Menu, MessageSquarePlus, Zap, Diamond, Brain, Globe, PlusCircle, ArrowUp, Mic, Feather, Eye, EyeOff, Download, Eraser, Bold, Italic, Code, ChevronDown, BrainCircuit, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
@@ -10,7 +10,7 @@ import { ModelSelector } from "./ModelSelector";
 interface ChatScreenProps {
   messages: Message[];
   isGenerating: boolean;
-  onSendMessage: (text: string, modelOverride?: ModelType, useSearch?: boolean) => void;
+  onSendMessage: (text: string, modelOverride?: ModelType, useSearch?: boolean, attachments?: Attachment[]) => void;
   onOpenSidebar: () => void;
   onNewChat: () => void;
   onClearChat: () => void;
@@ -43,6 +43,7 @@ export function ChatScreen({
   onPromptReused
 }: ChatScreenProps) {
   const [input, setInput] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
   const [isModelSelectorOpen, setIsModelSelectorOpen] = useState(false);
@@ -175,7 +176,7 @@ export function ChatScreen({
   };
 
   const handleSend = () => {
-    if (input.trim() && !isGenerating) {
+    if ((input.trim() || attachments.length > 0) && !isGenerating) {
       triggerHaptic();
       let modelOverride: ModelType | undefined;
       // If "Think" is enabled, ensure we use R1 model
@@ -183,8 +184,9 @@ export function ChatScreen({
         onModelChange("R1");
         modelOverride = "R1";
       }
-      onSendMessage(input.trim(), modelOverride, isSearch);
+      onSendMessage(input.trim(), modelOverride, isSearch, attachments);
       setInput("");
+      setAttachments([]);
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
@@ -327,6 +329,23 @@ export function ChatScreen({
       {/* Input Area */}
       <div className="p-4 bg-white dark:bg-transparent transition-colors duration-300">
         <div className="max-w-4xl mx-auto bg-[#F0F4F9] dark:bg-[#1e1e24] md:rounded-[32px] rounded-3xl p-3 flex flex-col gap-2 shadow-sm border border-transparent dark:border-[#2a2a35] transition-colors duration-300">
+          {attachments.length > 0 && (
+            <div className="flex gap-3 px-3 pt-2 overflow-x-auto">
+              {attachments.map((att, i) => (
+                <div key={i} className="relative shrink-0 mt-2 ml-1">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+                    {att.url && <img src={att.url} alt="attachment" className="w-full h-full object-cover" />}
+                  </div>
+                  <button 
+                    onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))}
+                    className="absolute -top-2 -right-2 bg-gray-800 dark:bg-gray-100 text-white dark:text-gray-900 rounded-full p-1 shadow-sm hover:opacity-80 transition-opacity"
+                  >
+                    <X size={12} strokeWidth={3} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <textarea
             ref={textareaRef}
             value={input}
@@ -370,18 +389,33 @@ export function ChatScreen({
             </div>
             <div className="flex gap-2 text-gray-600 dark:text-gray-400 items-center pr-1">
               <label className="hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10">
-                <input type="file" className="hidden" onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setInput((prev) => prev + `[Uploaded File: ${file.name}] `);
-                    if (textareaRef.current) {
-                      textareaRef.current.focus();
-                    }
+                <input type="file" title="Upload Image" multiple accept="image/*" className="hidden" onChange={async (e) => {
+                  const files = e.target.files;
+                  if (!files) return;
+                  const newAttachments: Attachment[] = [];
+                  for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    if (!file.type.startsWith('image/')) continue;
+                    const base64 = await new Promise<string>((resolve) => {
+                      const reader = new FileReader();
+                      reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+                      reader.readAsDataURL(file);
+                    });
+                    newAttachments.push({
+                      data: base64,
+                      mimeType: file.type,
+                      url: URL.createObjectURL(file)
+                    });
                   }
+                  setAttachments(prev => [...prev, ...newAttachments]);
+                  if (textareaRef.current) {
+                    textareaRef.current.focus();
+                  }
+                  e.target.value = '';
                 }} />
                 <PlusCircle size={22} strokeWidth={1.5} />
               </label>
-              {!input.trim() && (
+              {(!input.trim() && attachments.length === 0) && (
                 <button 
                   onClick={toggleRecording}
                   className={cn("transition-colors p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10", isRecording ? "text-blue-500 dark:text-sky-400 animate-pulse bg-blue-50 dark:bg-blue-900/30" : "hover:text-gray-900 dark:hover:text-white")}
@@ -389,7 +423,7 @@ export function ChatScreen({
                   <Mic size={22} strokeWidth={1.5} />
                 </button>
               )}
-              {input.trim() && (
+              {(input.trim() || attachments.length > 0) && (
                 <button 
                   onClick={handleSend}
                   disabled={isGenerating}

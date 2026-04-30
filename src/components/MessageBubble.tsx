@@ -176,6 +176,20 @@ export function MessageBubble({ message, onDelete, onRegenerate, showReasoningDe
           </motion.div>
         )}
 
+        {message.attachments && message.attachments.length > 0 && (
+          <div className="flex gap-2 mb-3 overflow-x-auto">
+            {message.attachments.map((att, i) => (
+              <div key={i} className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-black/5 dark:bg-white/5 shrink-0">
+                {att.url ? (
+                  <img src={att.url} alt="Uploaded file" className="w-full h-full object-cover" />
+                ) : (
+                  <img src={`data:${att.mimeType};base64,${att.data}`} alt="Uploaded file" className="w-full h-full object-cover" />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className={cn(
           "markdown-body prose max-w-none text-[16px] leading-relaxed",
           isUser ? "text-[#1f1f1f] dark:prose-invert dark:text-gray-100" : "dark:prose-invert text-[#1f1f1f] dark:text-[#E3E3E3]",
